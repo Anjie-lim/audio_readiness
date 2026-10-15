@@ -1,0 +1,1231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Listen Up! — Audio Evaluation Challenge</title>
+<style>
+:root{
+  --ink:#172238;--muted:#647187;--paper:#f3f6fb;--panel:#fff;--line:#dce4ef;
+  --navy:#162b49;--blue:#2859a6;--blue-soft:#eaf1ff;--green:#18794e;
+  --green-soft:#eaf8f0;--red:#b42318;--red-soft:#fff0ee;--amber:#8a5700;--amber-soft:#fff6df;
+  --shadow:0 10px 28px rgba(22,43,73,.07)
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+.hero{background:linear-gradient(135deg,#132640,#244b7b);color:white;padding:34px 18px 30px}
+.wrap{width:min(1040px,100% - 32px);margin:auto}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.74rem;font-weight:800;color:#c5d8f4}
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.05;margin:8px 0 12px;letter-spacing:-.035em}
+.hero p{max-width:760px;color:#e0e9f6;margin:0}
+.hero-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.pill{border:1px solid #ffffff45;background:#ffffff10;border-radius:999px;padding:5px 10px;font-size:.8rem}
+main{padding:22px 0 50px}
+.status{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:16px;color:var(--muted)}
+.status strong{color:var(--ink);display:block;margin-bottom:2px}
+.progress-card,.round-card,.result-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.progress-card{padding:16px 18px;margin-bottom:18px}
+.progress-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.progress-top strong{font-size:.96rem}
+.progress-track{height:9px;background:#e7edf5;border-radius:999px;overflow:hidden}
+.progress-fill{height:100%;width:0;background:#4778c7;transition:width .25s}
+.round-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.round-chip{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;color:var(--muted)}
+.round-chip .num{width:31px;height:31px;border-radius:9px;background:#edf1f7;display:grid;place-items:center;font-weight:800;flex:none}
+.round-chip.active{border-color:#9db8e6;background:#f2f6ff;color:var(--ink)}
+.round-chip.active .num{background:var(--blue);color:white}
+.round-chip.done{border-color:#a8dbc1;background:#f0fbf5;color:#145c3d}
+.round-chip.done .num{background:#18794e;color:white}
+.round-chip strong{display:block;font-size:.88rem;line-height:1.25}
+.round-chip small{display:block;font-size:.75rem;margin-top:2px}
+.round-card{padding:clamp(18px,4vw,30px);min-height:350px}
+.round-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px}
+.kicker{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;font-weight:800;color:var(--blue)}
+h2{font-size:clamp(1.45rem,3vw,2rem);line-height:1.15;margin:4px 0 8px;letter-spacing:-.02em}
+h3{font-size:1.1rem;margin:0 0 8px}
+p{margin:8px 0 12px}
+.muted{color:var(--muted)}
+.round-count{font-size:.85rem;font-weight:800;background:#f0f3f8;border-radius:999px;padding:6px 10px;white-space:nowrap}
+.instruction{background:#f6f8fc;border:1px solid var(--line);border-left:4px solid #7e9fd4;border-radius:10px;padding:13px 15px;margin:16px 0}
+.button-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:10px 15px;font-weight:750;transition:transform .08s,background .15s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:white}
+.btn.primary:hover{background:#204b90}
+.btn.secondary{background:#f5f7fb}
+.btn.good{background:var(--green-soft);border-color:#9fd6b9;color:#145c3d}
+.btn.bad{background:var(--red-soft);border-color:#efb2ab;color:#8d2119}
+.choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.choice{border:1px solid var(--line);background:white;border-radius:12px;padding:13px 14px;text-align:left;font-weight:700;color:var(--ink)}
+.choice:hover:not(:disabled){border-color:#8ca9dc;background:#f7f9ff}
+.choice.selected{border-color:var(--blue);background:var(--blue-soft);box-shadow:inset 0 0 0 1px var(--blue)}
+.choice.correct{border-color:#79c59c;background:var(--green-soft)}
+.choice.incorrect{border-color:#e49b93;background:var(--red-soft)}
+.feedback{display:none;border-radius:11px;padding:13px 15px;margin-top:14px}
+.feedback.show{display:block}
+.feedback.correct{background:var(--green-soft);border:1px solid #a8dbc1;color:#145c3d}
+.feedback.incorrect{background:var(--red-soft);border:1px solid #efb2ab;color:#8d2119}
+.feedback strong{display:block;margin-bottom:3px}
+.channel-stage{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.channel{border:1px solid var(--line);border-radius:14px;background:#fbfcff;padding:16px;text-align:center}
+.channel svg{width:100%;height:70px;max-width:190px;color:#7892b8}
+.channel strong{display:block;font-size:1.1rem}
+.channel small{color:var(--muted)}
+.pace-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.pace-card{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fbfcff}
+.pace-card h3{display:flex;justify-content:space-between;align-items:center}
+.pace-card p{font-size:.9rem;color:var(--muted);min-height:44px}
+.pace-card .btn{width:100%}
+.line-quote{font-size:1.05rem;font-weight:700;background:#f6f8fc;border-radius:10px;padding:13px 15px;margin:14px 0}
+.artifact-player{display:flex;align-items:center;gap:12px;background:#f6f8fc;border:1px solid var(--line);padding:13px;border-radius:12px;margin:15px 0}
+.play-icon{width:43px;height:43px;border-radius:12px;background:var(--blue);color:white;border:0;font-size:1.05rem;flex:none}
+.player-meta{min-width:0;flex:1}
+.player-meta strong{display:block}
+.player-meta small{display:block;color:var(--muted)}
+.artifact-player .btn{flex:none}
+.note{font-size:.85rem;color:var(--muted)}
+.result-card{padding:24px;margin-top:18px}
+.result-score{font-size:clamp(2.5rem,8vw,4.2rem);font-weight:850;letter-spacing:-.05em;line-height:1.05;margin:10px 0}
+.score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}
+.score-tile{background:#f6f8fc;border:1px solid var(--line);border-radius:12px;padding:14px}
+.score-tile strong{font-size:1.45rem;display:block}
+.score-tile span{font-size:.82rem;color:var(--muted)}
+footer{color:var(--muted);font-size:.83rem;padding:20px 0 10px}
+[hidden]{display:none!important}
+@media(max-width:650px){
+ .wrap{width:min(100% - 22px,1040px)}.hero{padding:27px 0 24px}
+ .round-nav{grid-template-columns:1fr;gap:7px}
+ .round-chip{padding:9px 11px}.round-chip small{display:none}
+ .round-card{padding:18px;min-height:0}.round-head{display:block}.round-count{display:inline-block;margin-top:8px}
+ .choice-grid,.pace-pair,.score-grid{grid-template-columns:1fr}
+ .channel-stage{gap:8px}.channel{padding:12px 8px}
+ .artifact-player{align-items:flex-start;flex-wrap:wrap}.artifact-player .btn{margin-left:55px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Interactive listening skills game</div>
+    <h1>Listen Up!</h1>
+    <p>Audio Evaluation Challenge — check your listening setup, spot audio artifacts, follow voice-steering instructions, and practice reasoning and speaking in realistic conversations.</p>
+    <div class="hero-pills"><span class="pill">4 rounds</span><span class="pill">27 scored questions</span><span class="pill">Instant feedback</span><span class="pill">Speaking practice</span></div>
+  </div>
+</header>
+<main class="wrap">
+  <div id="globalStatus" class="status" role="status" aria-live="polite"><strong>Preparing your listening challenge…</strong>Complete the headphone check, identify audio artifacts, follow the voice steer, then practice reasoning and spoken responses.</div>
+  <section class="progress-card" aria-label="Game progress">
+    <div class="progress-top"><strong id="progressLabel">Round 1 of 4 · Headphone Verification</strong><span id="progressPercent">0%</span></div>
+    <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+  </section>
+  <nav class="round-nav" aria-label="Rounds">
+    <div class="round-chip active" id="chip1"><span class="num">1</span><span><strong>Headphone Check</strong><small>Confirm left and right</small></span></div>
+    <div class="round-chip" id="chip2"><span class="num">2</span><span><strong>Spot the Artifact</strong><small>Identify the audible defect</small></span></div>
+    <div class="round-chip" id="chip3"><span class="num">3</span><span><strong>Voice Steering</strong><small>Follow the delivery brief</small></span></div>
+    <div class="round-chip" id="chip4"><span class="num">4</span><span><strong>Talk to Me</strong><small>Reason, respond, speak</small></span></div>
+  </nav>
+
+  <section id="round1" class="round-card">
+    <div class="round-head"><div><div class="kicker">Round 1 · Headphone verification</div><h2>Audio Audit: Phase 1</h2><p class="muted">Listen to a short spoken prompt and identify the audible issue, if any.</p></div><span class="round-count" id="hCount">Round 1 of 5</span></div>
+    <div class="instruction"><strong>Put on your headphones</strong><br>This check covers a micro-click in the left channel, a micro-click in the right channel, a low-frequency rumble, and clean audio. Use headphones in a quiet place and keep the volume comfortable. You can play each scenario up to three times.</div>
+    <div class="line-quote" id="headphoneTranscript">“Please listen carefully to the following instruction.”</div>
+    <div class="button-row"><button class="btn primary" id="playToneBtn">▶ Play Audio</button><span class="note" id="toneStatus" aria-live="polite">Press Play Audio to hear the scenario. 3 plays left.</span></div>
+    <div class="choice-grid" id="channelChoices" hidden>
+      <button class="choice" data-channel="left">Left-ear click</button>
+      <button class="choice" data-channel="right">Right-ear click</button>
+      <button class="choice" data-channel="rumble">Low-frequency rumble</button>
+      <button class="choice" data-channel="clean">Clean audio — no background artifact</button>
+    </div>
+    <div class="button-row"><button class="btn primary" id="headphoneSubmit" disabled>Check answer</button></div>
+    <div id="headphoneFeedback" class="feedback" role="status" aria-live="polite"></div>
+    <div class="button-row"><button class="btn primary" id="headphoneNext" disabled>Next scenario</button></div>
+  </section>
+
+  <section id="round2" class="round-card" hidden>
+    <div class="round-head"><div><div class="kicker">Round 2 · Listening accuracy</div><h2>Spot the artifact</h2><p class="muted">Listen to one recording and identify the main audible issue. Focus on what you hear, not what you think caused it.</p></div><span class="round-count" id="aCount">Question 1 of 6</span></div>
+    <div class="instruction" id="artifactInstruction"><strong>Listening tip</strong><br>Compare the voice with a clean recording in your mind. Is there an unwanted layer of sound, an echo, a distortion, or a missing segment?</div>
+    <div class="artifact-player">
+      <button class="play-icon" id="playArtifactBtn" aria-label="Play audio clip">▶</button>
+      <div class="player-meta"><strong id="artifactClipTitle">Audio clip 1</strong><small id="artifactClipStatus">Loading the speech examples…</small></div>
+      <button class="btn secondary" id="replayArtifactBtn">Replay</button>
+    </div>
+    <p id="artifactPrompt" class="muted">Listen to the full clip, then choose the best description.</p>
+    <div id="artifactChoices" class="choice-grid"></div>
+    <div id="artifactFeedback" class="feedback" role="status" aria-live="polite"></div>
+    <div class="button-row"><button class="btn primary" id="artifactSubmit" disabled>Check answer</button><button class="btn primary" id="artifactNext" hidden>Next question</button></div>
+    <p class="note">These are controlled training examples mixed from one public-domain speech recording. They are demonstrations, not authentic recordings of real-world incidents.</p>
+  </section>
+
+  <section id="round3" class="round-card" hidden>
+    <div class="round-head"><div><div class="kicker">Round 3 · Voice steering</div><h2>Follow the steer</h2><p class="muted">Read the system instruction, listen to both recordings, and select the response that best follows the instruction. The spoken lines are not shown on screen.</p></div><span class="round-count" id="pCount">Uplink 1 of 9</span></div>
+    <div class="instruction" id="paceBrief"><strong>System instruction</strong><br>Listen to both responses and judge which better follows the instruction.</div>
+    <div class="pace-pair">
+      <div class="pace-card"><h3>Recording A <span class="round-count">A</span></h3><button class="btn primary pacePlay" data-version="a">▶ Play A</button></div>
+      <div class="pace-card"><h3>Recording B <span class="round-count">B</span></h3><button class="btn primary pacePlay" data-version="b">▶ Play B</button></div>
+    </div>
+    <p class="note" id="paceAudioNote">Audio is generated with your browser’s speech voice. Listen to both recordings before answering; no transcript or answer hints are shown.</p>
+    <div id="paceChoices" class="choice-grid">
+      <button class="choice" data-pace="a">Response A is better</button>
+      <button class="choice" data-pace="b">Response B is better</button>
+      <button class="choice" data-pace="same">About the same</button>
+    </div>
+    <div id="paceFeedback" class="feedback" role="status" aria-live="polite"></div>
+    <div class="button-row"><button class="btn primary" id="paceSubmit" disabled>Check answer</button><button class="btn primary" id="paceNext" hidden>Next question</button></div>
+  </section>
+
+
+  <section id="round4" class="round-card" hidden>
+    <div class="round-head"><div><div class="kicker">Round 4 · Conversation & reasoning</div><h2>Talk to Me</h2><p class="muted">Understand the situation, choose a response that makes sense, and practice delivering it aloud. Your choice is scored; speaking is a self-review exercise.</p></div><span class="round-count" id="cCount">Scenario 1 of 6</span></div>
+    <div class="instruction"><strong>How to play</strong><br>1. Read the situation or press “Hear scenario.” 2. Choose the strongest response. 3. Review the reasoning, then record yourself reading the selected response aloud. Listen back for clarity, pace, and conversational tone.</div>
+    <div class="line-quote" id="conversationScenario">Preparing your scenario…</div>
+    <div class="button-row"><button class="btn secondary" id="hearScenarioBtn">▶ Hear scenario</button></div>
+    <div id="conversationChoices" class="choice-grid"></div>
+    <div id="conversationFeedback" class="feedback" role="status" aria-live="polite"></div>
+    <div id="speakingPractice" hidden>
+      <div class="instruction"><strong>Now say it aloud</strong><br>Read the selected response naturally. Aim for clear articulation, an appropriate pace, and a tone that fits the situation. Your recording stays in this browser session and is not uploaded.</div>
+      <div class="line-quote" id="selectedResponseText"></div>
+      <div class="button-row">
+        <button class="btn primary" id="recordSpeechBtn">● Record</button>
+        <button class="btn secondary" id="stopSpeechBtn" disabled>■ Stop</button>
+        <button class="btn secondary" id="playSpeechBtn" disabled>▶ Play recording</button>
+        <button class="btn secondary" id="downloadSpeechBtn" disabled>↓ Download audio</button>
+      </div>
+      <p class="note" id="recordingStatus" role="status" aria-live="polite">Record a response, then play it back or download the audio file.</p>
+      <audio id="speechPlayback" controls hidden style="width:100%;margin-top:10px"></audio>
+    </div>
+    <p class="note">Speaking is not automatically graded. Use playback to check whether your response is easy to understand, logically organized, appropriately concise, and suitable for the conversation.</p>
+  </section>
+
+  <section id="finalResults" class="result-card" hidden aria-live="polite">
+    <div class="kicker">Challenge complete</div><h2>Your listening report</h2>
+    <div class="result-score" id="finalScore">0 / 27</div><p id="finalMessage">Your results are ready.</p>
+    <div class="score-grid">
+      <div class="score-tile"><strong id="scoreHeadphones">0 / 5</strong><span>Headphone check</span></div>
+      <div class="score-tile"><strong id="scoreArtifacts">0 / 6</strong><span>Artifact detection</span></div>
+      <div class="score-tile"><strong id="scorePace">0 / 10</strong><span>Voice steering</span></div>
+      <div class="score-tile"><strong id="scoreConversation">0 / 6</strong><span>Conversation & reasoning</span></div>
+    </div>
+    <div class="instruction"><strong>Remember</strong><br>Good evaluation depends on evidence. In conversation, listen for the actual need, reason through the constraints, respond respectfully, and speak clearly. The speaking exercise is for self-review rather than automatic scoring.</div>
+    <p class="note">Scores stay in this browser session. Recordings are kept locally for playback during the session; download any recording you want to keep before moving on or closing the game.</p>
+    <div class="button-row"><button class="btn primary" id="restartBtn">Play again</button></div>
+  </section>
+  <footer>Listen Up! · Audio Evaluation Challenge. Round 1 uses browser-generated audio examples; headphone playback is recommended for best spatial listening. Speech synthesis and microphone recording depend on browser/device support.</footer>
+</main>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const speechText='I remember the day we first arrived, and everything that happened after that.';
+const cleanURL='https://archive.org/download/spc266_2508_librivox/spc266_afterlove_pac_128kb.mp3';
+let audioContext=null,toneOsc=null,toneGain=null,currentAudio=null,currentAudioUrl=null;
+let hTrial=0,hTarget='left',hScore=0,hAnswered=false,hPlays=0,hSelected='';
+let aIndex=0,aScore=0,aSelected='',aAnswered=false,aUrls={};
+let pIndex=0,pScore=0,pSelected='',pAnswered=false;
+let cIndex=0,cScore=0,cSelected='',cAnswered=false;
+let mediaRecorder=null,recordedChunks=[],recordedBlobUrl=null,recordingStream=null,recordedMimeType='audio/webm';
+let scores={headphones:0,artifacts:0,pace:0,conversation:0};
+const hSequence=['left','right','rumble','clean','right'];
+const hAuditItems=[
+ {type:'left',explain:'A brief micro-click was added to the left channel.'},
+ {type:'right',explain:'A brief micro-click was added to the right channel.'},
+ {type:'rumble',explain:'A low 45 Hz rumble was added under the spoken prompt.'},
+ {type:'clean',explain:'This is the clean reference; no background artifact was added.'},
+ {type:'right',explain:'A brief micro-click was added to the right channel again. Listen for its position rather than guessing from the previous round.'}
+];
+const paceQuestions=[
+ {axis:'speaking-rate: slow',brief:'Speak very slowly and deliberately, taking your time.',textA:'Take a deep breath. Focus on the moment. Everything will be okay.',aRate:.5,aPitch:1,textB:'Take a deep breath. Focus on the moment. Everything will be okay.',bRate:1,bPitch:1,correct:'a',explain:"Response A uses a much slower speaking rate, matching the instruction to speak very slowly and deliberately."},
+ {axis:'expressiveness: flat',brief:'Speak in a completely flat, robotic, and emotionless tone.',textA:'I have calculated the probability of success. It is precisely 42 percent.',aRate:1,aPitch:1.3,textB:'I have calculated the probability of success. It is precisely 42 percent.',bRate:.9,bPitch:.1,correct:'b',explain:'Response B uses a much lower pitch setting to approximate a flat, robotic delivery.'},
+ {axis:'verbosity: extreme-terse',brief:'Provide only the most critical fact with zero elaboration.',textA:'Well, if you look at the sky, you will notice that the reason it appears blue is because of Rayleigh scattering.',aRate:1,aPitch:1,textB:'The sky is blue due to Rayleigh scattering.',bRate:1,bPitch:1,correct:'b',explain:'Response B gives only the essential fact. Response A adds conversational framing and elaboration.'},
+ {axis:'formality: chatty-friend',brief:'Speak casually, warmly, and informally.',textA:"Hey there! How's it going? So glad you could make it today, it's awesome to see you!",aRate:1.1,aPitch:1.2,textB:'Greetings. I acknowledge your arrival at this location. It is satisfactory.',bRate:.9,bPitch:.8,correct:'a',explain:'Response A uses casual, warm, informal phrasing suited to a chatty friend.'},
+ {axis:'speaking-rate: fast',brief:'Deliver the response quickly and with urgency.',textA:'The system is experiencing a critical failure. Please evacuate the premises immediately.',aRate:1,aPitch:1,textB:'The system is experiencing a critical failure. Please evacuate the premises immediately.',bRate:1.7,bPitch:1,correct:'b',explain:'Response B accelerates the speaking rate to match the instruction to deliver the response quickly and urgently.'},
+ {axis:'verbosity: balanced',brief:'Give the user the context needed to understand the answer, then stop.',textA:'Most people give up on resolutions because they set vague goals without a clear plan.',aRate:1,aPitch:1,textB:'People quit resolutions because their goals are too broad without a roadmap.',bRate:1,bPitch:1,correct:'same',explain:'Both responses are concise and provide a useful explanation without excessive detail. The wording differs, but both fit the steer.'},
+ {axis:'expressiveness: theatrical',brief:'Deliver the lines with high drama, extreme emotion, and theatrical flair.',textA:'To be, or not to be. That is the question.',aRate:.8,aPitch:1.8,textB:'To be, or not to be. That is the question.',bRate:1,bPitch:1,correct:'a',explain:'Response A uses a more dramatic pitch setting and slower pacing to approximate theatrical delivery.'},
+ {axis:'formality: executive-assistant',brief:'Speak in a highly professional, polite, and polished tone.',textA:'Your meeting has been scheduled for 3 PM. I have attached the agenda for your review.',aRate:1,aPitch:1,textB:'Okay cool, I threw that meeting on your cal for 3. Check out the notes I slapped in there.',bRate:1.1,bPitch:1.1,correct:'a',explain:'Response A uses professional, polished wording appropriate for an executive assistant. Response B is casual and slangy.'},
+ {axis:'speaking-rate: very-slow',brief:'Speak at an agonizingly slow pace. Drag out the words.',textA:'I am walking as slow as I possibly can.',aRate:.8,aPitch:1,textB:'I am walking as slow as I possibly can.',bRate:.2,bPitch:1,correct:'b',explain:'Response B uses an extremely low speaking rate, matching the instruction to drag out the words.'},
+ {axis:'verbosity: detailed',brief:'Provide a comprehensive, exhaustive, and highly detailed answer.',textA:'Photosynthesis is the process by which green plants use sunlight to synthesize foods from carbon dioxide and water, generating oxygen as a byproduct.',aRate:1,aPitch:1,textB:'Plants use sunlight to make their own food in a process called photosynthesis.',bRate:1,bPitch:1,correct:'a',explain:'Response A provides more detail than Response B and better matches the request for a comprehensive answer.'}
+];
+const artifactQuestions=[
+ {key:'clean',title:'Clip 1',prompt:'Which description best matches the recording?',choices:['No obvious artifact','Background hiss or static','A distinct echo','Speech distortion'],correct:'No obvious artifact',explain:'This is the clean reference. No added artifact is intended to stand out.'},
+ {key:'hiss',title:'Clip 2',prompt:'What is the main issue you hear?',choices:['Unexpected beep','Background hiss or static','Audio dropout','No obvious artifact'],correct:'Background hiss or static',explain:'A continuous layer of high-frequency noise sits underneath the voice.'},
+ {key:'beep',title:'Clip 3',prompt:'What is the main issue you hear?',choices:['Speech distortion','Background hiss or static','Unexpected beep or electronic tone','A distinct echo'],correct:'Unexpected beep or electronic tone',explain:'Short electronic tones interrupt the speech. They are separate from the spoken content.'},
+ {key:'echo',title:'Clip 4',prompt:'What is the main issue you hear?',choices:['A distinct echo','No obvious artifact','Audio dropout','Background hiss or static'],correct:'A distinct echo',explain:'A delayed repeat follows the original voice. That is different from reverberation, which blends into a lingering tail.'},
+ {key:'distortion',title:'Clip 5',prompt:'What is the main issue you hear?',choices:['Unexpected beep','No obvious artifact','Speech distortion','Audio dropout'],correct:'Speech distortion',explain:'The voice itself sounds unnaturally harsh or clipped. The change is in the speech signal, not just a background layer.'},
+ {key:'dropout',title:'Clip 6',prompt:'What is the main issue you hear?',choices:['Background hiss or static','A distinct echo','Audio dropout','Unexpected beep'],correct:'Audio dropout',explain:'A short section of the voice disappears, then the recording continues.'}
+];
+function stopAllAudio(){
+ if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;currentAudio=null;}
+ currentAudioUrl=null;
+ if(window.speechSynthesis)window.speechSynthesis.cancel();
+ if(toneOsc){try{toneOsc.stop();}catch(e){}toneOsc=null;}
+ if(toneGain){try{toneGain.disconnect();}catch(e){}toneGain=null;}
+}
+function setStatus(title,detail){$('globalStatus').innerHTML='<strong>'+title+'</strong>'+detail;}
+function updateProgress(){
+ let done=0,total=27,label='Round 1 of 4 · Headphone Verification',active=1;
+ if(!$('finalResults').hidden){done=27;label='Challenge complete';active=4;}
+ else if(!$('round4').hidden){done=21+cIndex;label='Round 4 of 4 · Talk to Me';active=4;}
+ else if(!$('round3').hidden){done=11+pIndex;label='Round 3 of 4 · Follow the Steer';active=3;}
+ else if(!$('round2').hidden){done=5+aIndex;label='Round 2 of 4 · Spot the Artifact';active=2;}
+ else{done=hTrial;label='Round 1 of 4 · Headphone Verification';active=1;}
+ $('progressLabel').textContent=label;$('progressPercent').textContent=Math.round(done/total*100)+'%';$('progressFill').style.width=(done/total*100)+'%';
+ for(let i=1;i<=4;i++){$('chip'+i).classList.toggle('active',i===active);$('chip'+i).classList.toggle('done',i<active||(!$('finalResults').hidden));}
+}
+function showRound(n){
+ stopAllAudio();
+ ['round1','round2','round3','round4','finalResults'].forEach((id,i)=>$(id).hidden=(i!==n-1));
+ updateProgress();window.scrollTo({top:0,behavior:'smooth'});
+}
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function playTone(){
+ if(hPlays>=3){$('toneStatus').textContent='No plays left for this scenario. Select your answer.';return;}
+ stopAllAudio();
+ hPlays++;
+ const q=hAuditItems[hTrial];
+ const AC=window.AudioContext||window.webkitAudioContext;
+ $('channelChoices').hidden=true;$('headphoneSubmit').disabled=true;
+ $('headphoneFeedback').className='feedback';$('headphoneFeedback').textContent='';
+ $('toneStatus').textContent='Playing audio…';
+ if(!('speechSynthesis' in window)){ $('toneStatus').textContent='Speech synthesis is not supported in this browser. Try a current browser.';return;}
+ const u=new SpeechSynthesisUtterance('Please listen carefully. This is a headphone verification sample. Thank you.');
+ const voices=window.speechSynthesis.getVoices();
+ const voice=voices.find(v=>/^en(-|_|$)/i.test(v.lang))||voices.find(v=>/english/i.test(v.name));
+ if(voice)u.voice=voice;u.lang=voice?.lang||'en-US';u.rate=.95;u.pitch=1;u.volume=1;
+ if(AC && q.type!=='clean'){
+   try{
+     audioContext=audioContext||new AC();
+     if(audioContext.state==='suspended')audioContext.resume();
+     const startAt=audioContext.currentTime+.65;
+     if(q.type==='left'||q.type==='right'){
+       const pan=audioContext.createStereoPanner?audioContext.createStereoPanner():null;
+       const osc=audioContext.createOscillator(),gain=audioContext.createGain();
+       osc.type='triangle';osc.frequency.value=1200;
+       gain.gain.setValueAtTime(.0001,startAt);
+       gain.gain.exponentialRampToValueAtTime(.075,startAt+.004);
+       gain.gain.exponentialRampToValueAtTime(.0001,startAt+.025);
+       gain.gain.setValueAtTime(.0001,startAt+.38);
+       gain.gain.exponentialRampToValueAtTime(.065,startAt+.384);
+       gain.gain.exponentialRampToValueAtTime(.0001,startAt+.405);
+       osc.connect(gain);
+       if(pan){pan.pan.value=q.type==='left'?-1:1;gain.connect(pan);pan.connect(audioContext.destination);}
+       else gain.connect(audioContext.destination);
+       osc.start(startAt);osc.stop(startAt+.42);toneOsc=osc;toneGain=gain;
+     }else if(q.type==='rumble'){
+       const osc=audioContext.createOscillator(),gain=audioContext.createGain();
+       osc.type='sine';osc.frequency.value=45;
+       gain.gain.setValueAtTime(.0001,startAt);
+       gain.gain.linearRampToValueAtTime(.12,startAt+.18);
+       gain.gain.setValueAtTime(.12,startAt+2.1);
+       gain.gain.linearRampToValueAtTime(.0001,startAt+2.45);
+       osc.connect(gain);gain.connect(audioContext.destination);
+       osc.start(startAt);osc.stop(startAt+2.5);toneOsc=osc;toneGain=gain;
+     }
+   }catch(err){console.warn('Could not create audio artifact',err);}
+ }
+ u.onstart=()=>{$('toneStatus').textContent='Listen for the artifact, if there is one. '+(3-hPlays)+' plays left after this one.';};
+ u.onend=()=>{$('toneStatus').textContent=hPlays>=3?'Audio finished. No plays left; select your answer.':'Audio finished. You may replay '+(3-hPlays)+' more time(s).';$('channelChoices').hidden=false;};
+ window.speechSynthesis.speak(u);
+}
+function setupHeadphoneTrial(){
+ hAnswered=false;hSelected='';hPlays=0;
+ hTarget=hSequence[hTrial]||'clean';
+ $('hCount').textContent='Round '+(hTrial+1)+' of '+hAuditItems.length;
+ $('headphoneTranscript').textContent='“Please listen carefully to the following instruction.”';
+ $('toneStatus').textContent='Press Play Audio to hear the scenario. 3 plays left.';
+ $('channelChoices').hidden=true;
+ $('channelChoices').querySelectorAll('[data-channel]').forEach(btn=>{
+   btn.disabled=false;btn.classList.remove('selected','correct','incorrect');
+ });
+ $('headphoneFeedback').className='feedback';$('headphoneFeedback').textContent='';
+ $('headphoneSubmit').disabled=true;$('headphoneNext').disabled=true;
+ $('playToneBtn').disabled=false;updateProgress();
+}
+$('playToneBtn').addEventListener('click',playTone);
+$('channelChoices').querySelectorAll('[data-channel]').forEach(btn=>btn.addEventListener('click',()=>{
+ if(hAnswered)return;hSelected=btn.dataset.channel;
+ $('channelChoices').querySelectorAll('[data-channel]').forEach(b=>b.classList.toggle('selected',b===btn));
+ $('headphoneSubmit').disabled=false;
+}));
+$('headphoneSubmit').addEventListener('click',()=>{
+ if(hAnswered||!hSelected)return;hAnswered=true;
+ const q=hAuditItems[hTrial],ok=hSelected===q.type;if(ok)hScore++;
+ $('channelChoices').querySelectorAll('[data-channel]').forEach(b=>{b.disabled=true;if(b.dataset.channel===q.type)b.classList.add('correct');else if(b.dataset.channel===hSelected)b.classList.add('incorrect');});
+ const fb=$('headphoneFeedback');fb.className='feedback show '+(ok?'correct':'incorrect');
+ fb.innerHTML='<strong>'+(ok?'Correct.':'Not quite.')+'</strong>'+q.explain;
+ $('headphoneSubmit').disabled=true;$('playToneBtn').disabled=true;$('headphoneNext').disabled=false;
+});
+$('headphoneNext').addEventListener('click',()=>{
+ if(!hAnswered)return;hTrial++;
+ if(hTrial<hAuditItems.length){setupHeadphoneTrial();}
+ else{scores.headphones=hScore;showRound(2);renderArtifactQuestion();}
+});
+function makeNoiseBuffer(ctx,duration){
+ const length=Math.ceil(ctx.sampleRate*duration),buf=ctx.createBuffer(1,length,ctx.sampleRate),d=buf.getChannelData(0);let last=0;
+ for(let i=0;i<length;i++){const white=Math.random()*2-1;last=.88*last+.22*white;d[i]=last;}
+ let peak=0;for(let i=0;i<length;i++)peak=Math.max(peak,Math.abs(d[i]));if(peak)for(let i=0;i<length;i++)d[i]/=peak;
+ return buf;
+}
+function addToneToOffline(ctx,dest,freq,amp,start,duration,type){
+ if(start>=ctx.length/ctx.sampleRate)return;
+ const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type||'sine';osc.frequency.value=freq;
+ gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(amp,start+.012);gain.gain.setValueAtTime(amp,Math.max(start+.02,start+duration-.02));gain.gain.linearRampToValueAtTime(0,Math.min(ctx.length/ctx.sampleRate,start+duration));
+ osc.connect(gain);gain.connect(dest);osc.start(start);osc.stop(Math.min(ctx.length/ctx.sampleRate,start+duration+.02));
+}
+function addHiss(ctx,dest,duration){
+ const src=ctx.createBufferSource();src.buffer=makeNoiseBuffer(ctx,duration);
+ const filter=ctx.createBiquadFilter();filter.type='highpass';filter.frequency.value=1500;
+ const gain=ctx.createGain();gain.gain.value=.026;
+ src.connect(filter);filter.connect(gain);gain.connect(dest);src.start(0);
+}
+function toWav(buffer){
+ const d=buffer.getChannelData(0),sr=buffer.sampleRate,out=new ArrayBuffer(44+d.length*2),v=new DataView(out);
+ const put=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+ put(0,'RIFF');v.setUint32(4,36+d.length*2,true);put(8,'WAVE');put(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);put(36,'data');v.setUint32(40,d.length*2,true);
+ for(let i=0;i<d.length;i++){const x=Math.max(-1,Math.min(1,d[i]));v.setInt16(44+i*2,x<0?x*32768:x*32767,true);}
+ return new Blob([out],{type:'audio/wav'});
+}
+async function renderArtifact(kind,decoded,startAt,duration){
+ const sr=22050,ctx=new OfflineAudioContext(1,Math.ceil(duration*sr),sr),mix=ctx.createGain();mix.gain.value=.92;mix.connect(ctx.destination);
+ const voice=ctx.createBufferSource();voice.buffer=decoded;
+ const voiceGain=ctx.createGain();voiceGain.gain.value=.92;
+ let node=voice;
+ if(kind==='distortion'){
+   const sh=ctx.createWaveShaper(),curve=new Float32Array(2048);
+   for(let i=0;i<curve.length;i++){const x=i*2/(curve.length-1)-1;curve[i]=Math.max(-.25,Math.min(.25,x));}
+   sh.curve=curve;sh.oversample='4x';voice.connect(sh);node=sh;
+ }
+ node.connect(voiceGain);voiceGain.connect(mix);
+ if(kind==='dropout'){
+   [[1.45,1.72],[4.15,4.43],[6.0,6.2]].forEach(([a,b])=>{if(a<duration){voiceGain.gain.setValueAtTime(.92,a);voiceGain.gain.setValueAtTime(0,a+.012);voiceGain.gain.setValueAtTime(0,Math.min(b,duration));voiceGain.gain.setValueAtTime(.92,Math.min(b+.012,duration));}});
+ }
+ voice.start(0,startAt,duration);voice.stop(duration);
+ if(kind==='hiss')addHiss(ctx,mix,duration);
+ if(kind==='beep'){[1.2,3.35,5.7].forEach(t=>{addToneToOffline(ctx,mix,1250,.075,t,.19,'square');addToneToOffline(ctx,mix,1650,.038,t+.02,.15,'sine');});}
+ if(kind==='echo'){
+   const echo=ctx.createDelay(1);echo.delayTime.value=.38;const wet=ctx.createGain();wet.gain.value=.32;
+   voice.connect(echo);echo.connect(wet);wet.connect(mix);
+ }
+ const rendered=await ctx.startRendering();const data=rendered.getChannelData(0);let peak=0;for(let i=0;i<data.length;i++)peak=Math.max(peak,Math.abs(data[i]));
+ if(peak>0){const scale=.82/peak;for(let i=0;i<data.length;i++)data[i]*=scale;}
+ return toWav(rendered);
+}
+async function prepareArtifactAudio(){
+ try{
+   setStatus('Preparing artifact audio…','Loading one public-domain speech sample and creating clean and modified versions. This may take a few seconds.');
+   const res=await fetch(cleanURL,{mode:'cors',cache:'force-cache'});if(!res.ok)throw new Error('Audio source returned HTTP '+res.status);
+   const ab=await res.arrayBuffer();const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('Web Audio is not supported in this browser.');
+   const ac=new AC();const decoded=await ac.decodeAudioData(ab.slice(0));const duration=Math.min(8.4,decoded.duration);const startAt=Math.min(17.55,Math.max(0,decoded.duration-duration));
+   const types=['clean','hiss','beep','echo','distortion','dropout'];
+   for(let i=0;i<types.length;i++){
+     const blob=await renderArtifact(types[i],decoded,startAt,duration);aUrls[types[i]]=URL.createObjectURL(blob);
+     $('artifactClipStatus').textContent='Prepared '+(i+1)+' of '+types.length+' clips…';
+   }
+   await ac.close();$('artifactClipStatus').textContent='Speech clips ready. Press Play to listen.';
+   $('playArtifactBtn').disabled=false;$('replayArtifactBtn').disabled=false;
+   setStatus('Audio examples ready.','The headphone check, artifact round, and pacing round are ready. Audio clips play one at a time.');
+ }catch(err){
+   console.error(err);$('artifactClipStatus').textContent='Speech sample could not be loaded.';
+   $('playArtifactBtn').disabled=true;$('replayArtifactBtn').disabled=true;
+   setStatus('Artifact audio could not load.','Check your internet connection or open the HTML from a browser that can access Archive.org. The other rounds remain available for preview, but Round 2 needs the speech source.');
+ }
+}
+function playArtifact(){
+ const q=artifactQuestions[aIndex];const url=aUrls[q.key];if(!url)return;
+ stopAllAudio();currentAudioUrl=url;currentAudio=new Audio(url);currentAudio.play().catch(err=>{console.warn(err);$('artifactClipStatus').textContent='Playback was blocked. Press Play again to allow audio.';});
+ $('artifactClipStatus').textContent='Playing '+q.title.toLowerCase()+'.';
+ currentAudio.onended=()=>{$('artifactClipStatus').textContent='Clip finished. You can replay it before answering.';currentAudio=null;};
+}
+$('playArtifactBtn').addEventListener('click',playArtifact);$('replayArtifactBtn').addEventListener('click',playArtifact);
+function renderArtifactQuestion(){
+ const q=artifactQuestions[aIndex];aSelected='';aAnswered=false;$('aCount').textContent='Question '+(aIndex+1)+' of '+artifactQuestions.length;
+ $('artifactClipTitle').textContent=q.title;$('artifactClipStatus').textContent=aUrls[q.key]?'Press Play to listen.':'Preparing speech clips…';
+ $('artifactPrompt').textContent=q.prompt;$('artifactFeedback').className='feedback';$('artifactFeedback').textContent='';$('artifactSubmit').hidden=false;$('artifactSubmit').disabled=true;$('artifactNext').hidden=true;
+ const holder=$('artifactChoices');holder.innerHTML='';
+ q.choices.forEach(choice=>{const b=document.createElement('button');b.type='button';b.className='choice';b.textContent=choice;b.addEventListener('click',()=>{if(aAnswered)return;aSelected=choice;holder.querySelectorAll('button').forEach(x=>x.classList.toggle('selected',x===b));$('artifactSubmit').disabled=false;});holder.appendChild(b);});
+ $('playArtifactBtn').disabled=!aUrls[q.key];$('replayArtifactBtn').disabled=!aUrls[q.key];updateProgress();
+}
+$('artifactSubmit').addEventListener('click',()=>{
+ if(aAnswered||!aSelected)return;aAnswered=true;const q=artifactQuestions[aIndex],ok=aSelected===q.correct;if(ok)aScore++;
+ $('artifactChoices').querySelectorAll('button').forEach(b=>{b.disabled=true;if(b.textContent===q.correct)b.classList.add('correct');else if(b.textContent===aSelected)b.classList.add('incorrect');});
+ const fb=$('artifactFeedback');fb.className='feedback show '+(ok?'correct':'incorrect');fb.innerHTML='<strong>'+(ok?'Correct.':'Not quite.')+'</strong>'+q.explain;
+ $('artifactSubmit').hidden=true;$('artifactNext').hidden=false;$('artifactNext').textContent=aIndex===artifactQuestions.length-1?'Continue to Round 3':'Next question';
+});
+$('artifactNext').addEventListener('click',()=>{
+ if(!aAnswered)return;aIndex++;
+ if(aIndex<artifactQuestions.length){renderArtifactQuestion();}
+ else{scores.artifacts=aScore;showRound(3);renderPaceQuestion();}
+});
+function playPace(version){
+ stopAllAudio();if(!('speechSynthesis'in window)){ $('paceAudioNote').textContent='Speech synthesis is not supported in this browser. Try a current version of Chrome, Edge, or Safari.';return;}
+ const q=paceQuestions[pIndex],u=new SpeechSynthesisUtterance(version==='a'?q.textA:q.textB);
+ const voices=window.speechSynthesis.getVoices();const voice=voices.find(v=>/^en(-|_|$)/i.test(v.lang))||voices.find(v=>/english/i.test(v.name));if(voice)u.voice=voice;
+ u.lang=voice?.lang||'en-US';
+ u.rate=version==='a'?q.aRate:q.bRate;
+ u.pitch=version==='a'?(q.aPitch??1):(q.bPitch??1);
+ u.volume=1;
+ window.speechSynthesis.speak(u);
+}
+document.querySelectorAll('.pacePlay').forEach(b=>b.addEventListener('click',()=>playPace(b.dataset.version)));
+function renderPaceQuestion(){
+ const q=paceQuestions[pIndex];pSelected='';pAnswered=false;$('pCount').textContent='Uplink '+(pIndex+1)+' of '+paceQuestions.length+' · '+q.axis;
+ $('paceBrief').innerHTML='<strong>Delivery brief</strong><br>'+q.brief;
+ $('paceChoices').querySelectorAll('button').forEach(b=>{b.disabled=false;b.classList.remove('selected','correct','incorrect');b.onclick=()=>{if(pAnswered)return;pSelected=b.dataset.pace;$('paceChoices').querySelectorAll('button').forEach(x=>x.classList.toggle('selected',x===b));$('paceSubmit').disabled=false;};});
+ $('paceFeedback').className='feedback';$('paceFeedback').textContent='';$('paceSubmit').hidden=false;$('paceSubmit').disabled=true;$('paceNext').hidden=true;updateProgress();
+}
+$('paceSubmit').addEventListener('click',()=>{
+ if(pAnswered||!pSelected)return;pAnswered=true;const q=paceQuestions[pIndex],ok=pSelected===q.correct;if(ok)pScore++;
+ $('paceChoices').querySelectorAll('button').forEach(b=>{b.disabled=true;if(b.dataset.pace===q.correct)b.classList.add('correct');else if(b.dataset.pace===pSelected)b.classList.add('incorrect');});
+ const fb=$('paceFeedback');fb.className='feedback show '+(ok?'correct':'incorrect');fb.innerHTML='<strong>'+(ok?'Correct.':'Not quite.')+'</strong>'+q.explain;
+ $('paceSubmit').hidden=true;$('paceNext').hidden=false;$('paceNext').textContent=pIndex===paceQuestions.length-1?'Continue to Round 4':'Next question';
+});
+$('paceNext').addEventListener('click',()=>{
+ if(!pAnswered)return;pIndex++;
+ if(pIndex<paceQuestions.length){renderPaceQuestion();}
+ else{scores.pace=pScore;showRound(4);renderConversationQuestion();}
+});
+function showResults(){
+ stopAllAudio();showRound(5);const total=scores.headphones+scores.artifacts+scores.pace+scores.conversation;
+ $('finalScore').textContent=total+' / 27';$('scoreHeadphones').textContent=scores.headphones+' / 5';$('scoreArtifacts').textContent=scores.artifacts+' / 6';$('scorePace').textContent=scores.pace+' / '+paceQuestions.length;$('scoreConversation').textContent=scores.conversation+' / '+conversationQuestions.length;
+ $('finalMessage').textContent=total>=22?'Excellent work. Keep applying evidence-based listening, sound judgment, and clear communication.':total>=16?'Good work. Review missed explanations and keep practicing careful listening and clear responses.':'You have a useful starting point. Review the feedback and practice explaining your reasoning clearly.';
+ updateProgress();
+}
+const conversationQuestions=[
+ {scenario:"A teammate says: “I need the report by noon, but the data team says the final numbers will not arrive until 2 p.m.” What is the most useful response?",options:[
+  "“Send it as complete at noon, then quietly add the missing figures later.”",
+  "“Let's flag the gap and agree on an interim report or later deadline.”",
+  "“Tell the data team to hurry; the deadline cannot move.”"
+ ],correct:1,explain:"This response identifies what can be done now, makes the missing data visible, and agrees on a realistic next step.",speak:"Let's confirm what is ready, flag the missing figures, and agree on an interim report or a later deadline."},
+ {scenario:"In a meeting, someone says: “Can you make the summary shorter?” You are not sure whether they want fewer words or fewer sections. What should you say?",options:[
+  "“Do you mean fewer words or fewer sections?”",
+  "“I can remove the introduction and final section to shorten it.”",
+  "“I will cut some wording and remove a section to make it shorter.”"
+ ],correct:0,explain:"A brief clarification avoids guessing and lets the other person specify what “shorter” means.",speak:"Sure. Should I cut the wording or reduce the sections?"},
+ {scenario:"A colleague tells you: “I’m overwhelmed. Three people have asked me for urgent work today.” Which response best supports the conversation and moves toward a solution?",options:[
+  "“That happens to everyone; just do the oldest task first and work through the list.”",
+  "“You should tell them all that you cannot help today.”",
+  "“That sounds rough. Want to rank the deadlines together?”"
+ ],correct:2,explain:"It acknowledges the colleague's feelings and offers a practical next step without blaming anyone.",speak:"That sounds stressful. Want to sort the deadlines together?"},
+ {scenario:"A customer asks whether a feature will definitely be available next Friday. You have heard that it is planned, but you have no confirmed release date. What is the best answer?",options:[
+  "“Yes, next Friday is confirmed. You can count on it.”",
+  "“It’s planned for Friday, but I’ll confirm the date.”",
+  "“I cannot confirm it yet; I can check with the development team and follow up.”"
+ ],correct:1,explain:"This answer is concise, distinguishes a plan from a confirmed date, and commits to a useful follow-up.",speak:"It is planned for Friday, but I’ll verify the date first."},
+ {scenario:"A teammate disagrees with your proposal and says: “I don’t think this approach will work.” You want to understand the objection without escalating the disagreement. What should you say?",options:[
+  "“What risk concerns you most? Let's compare options.”",
+  "“I hear your concern, but I still think my proposal is the better option for this situation.”",
+  "“Okay, perhaps you can suggest another plan that would work better for the team.”"
+ ],correct:0,explain:"It asks for the specific concern and turns the disagreement into a comparison of options.",speak:"What is the main risk you see? Let's compare the options."},
+ {scenario:"Someone asks for quick directions while you are both standing outside a large building. They need to reach the visitor desk on the second floor. Which response is clearest to say aloud?",options:[
+  "“It should be somewhere upstairs near reception, I think.”",
+  "“Go in, take the elevator to floor two, then turn left.”",
+  "“Look around inside; you will probably find the visitor desk.”"
+ ],correct:1,explain:"It gives the key actions in order and is concise enough to follow while walking. Add a landmark if the person needs more help.",speak:"Go in, take the elevator to floor two, then turn left."}
+];
+function hearConversationScenario(){
+ const q=conversationQuestions[cIndex];
+ if(!('speechSynthesis' in window)){ $('recordingStatus').textContent='Scenario audio is not supported in this browser; use the written scenario.';return; }
+ stopAllAudio();const u=new SpeechSynthesisUtterance(q.scenario);
+ const voices=window.speechSynthesis.getVoices();const voice=voices.find(v=>/^en(-|_|$)/i.test(v.lang))||voices.find(v=>/english/i.test(v.name));if(voice)u.voice=voice;
+ u.lang=voice?.lang||'en-US';u.rate=.96;u.pitch=1;u.volume=1;window.speechSynthesis.speak(u);
+}
+function cleanupRecording(){
+ if(recordingStream){recordingStream.getTracks().forEach(t=>t.stop());recordingStream=null;}
+ if(recordedBlobUrl){URL.revokeObjectURL(recordedBlobUrl);recordedBlobUrl=null;}
+ recordedChunks=[];mediaRecorder=null;
+}
+function resetSpeakingPractice(){
+ if(mediaRecorder&&mediaRecorder.state==='recording'){try{mediaRecorder.stop();}catch(e){}}
+ cleanupRecording();
+ $('speechPlayback').pause();$('speechPlayback').removeAttribute('src');$('speechPlayback').hidden=true;
+ $('recordSpeechBtn').disabled=false;$('stopSpeechBtn').disabled=true;$('playSpeechBtn').disabled=true;$('downloadSpeechBtn').disabled=true;
+ $('recordingStatus').textContent='Recording requires microphone permission. You can also continue without recording.';
+ $('conversationNext').disabled=true;
+}
+function renderConversationQuestion(){
+ resetSpeakingPractice();
+ const q=conversationQuestions[cIndex];cSelected='';cAnswered=false;
+ $('cCount').textContent='Scenario '+(cIndex+1)+' of '+conversationQuestions.length;
+ $('conversationScenario').textContent=q.scenario;
+ $('conversationFeedback').className='feedback';$('conversationFeedback').textContent='';
+ $('speakingPractice').hidden=true;$('conversationSubmit').disabled=false;
+ const holder=$('conversationChoices');holder.innerHTML='';
+ q.options.forEach((option,i)=>{
+  const b=document.createElement('button');b.type='button';b.className='choice';b.textContent=option;
+  b.addEventListener('click',()=>{if(cAnswered)return;cSelected=String(i);holder.querySelectorAll('button').forEach(x=>x.classList.toggle('selected',x===b));});
+  holder.appendChild(b);
+ });
+ updateProgress();
+}
+$('hearScenarioBtn').addEventListener('click',hearConversationScenario);
+$('conversationChoices').insertAdjacentHTML('afterend','<div class="button-row" id="conversationSubmitRow"><button class="btn primary" id="conversationSubmit">Check response</button></div>');
+$('conversationSubmit').addEventListener('click',()=>{
+ if(cAnswered||cSelected==='')return;cAnswered=true;
+ const q=conversationQuestions[cIndex],ok=Number(cSelected)===q.correct;if(ok)cScore++;
+ $('conversationChoices').querySelectorAll('button').forEach((b,i)=>{b.disabled=true;if(i===q.correct)b.classList.add('correct');else if(String(i)===cSelected)b.classList.add('incorrect');});
+ const fb=$('conversationFeedback');fb.className='feedback show '+(ok?'correct':'incorrect');fb.innerHTML='<strong>'+(ok?'Strong choice.':'Review the stronger response.')+'</strong>'+q.explain;
+ $('selectedResponseText').textContent=q.speak;$('speakingPractice').hidden=false;
+ $('conversationSubmit').disabled=true;$('conversationNext').textContent=cIndex===conversationQuestions.length-1?'See results':'Next scenario';
+ updateProgress();
+});
+$('recordSpeechBtn').addEventListener('click',async()=>{
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){$('recordingStatus').textContent='Microphone recording is not supported in this browser. You can still read the response aloud and continue.';$('conversationNext').disabled=false;return;}
+ try{
+  if(recordedBlobUrl){URL.revokeObjectURL(recordedBlobUrl);recordedBlobUrl=null;}
+  recordedChunks=[];recordingStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  const mime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':(MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'');
+  mediaRecorder=mime?new MediaRecorder(recordingStream,{mimeType:mime}):new MediaRecorder(recordingStream);
+  mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size)recordedChunks.push(e.data);};
+  mediaRecorder.onstop=()=>{
+   recordedMimeType=mediaRecorder?.mimeType||'audio/webm';
+   const blob=new Blob(recordedChunks,{type:recordedMimeType});
+   if(recordedBlobUrl)URL.revokeObjectURL(recordedBlobUrl);
+   recordedBlobUrl=URL.createObjectURL(blob);$('speechPlayback').src=recordedBlobUrl;$('speechPlayback').hidden=false;
+   $('playSpeechBtn').disabled=false;$('downloadSpeechBtn').disabled=false;$('conversationNext').disabled=false;
+   $('recordingStatus').textContent='Recording ready. Play it back or download the audio file. It has not been uploaded.';
+   if(recordingStream){recordingStream.getTracks().forEach(t=>t.stop());recordingStream=null;}
+  };
+  mediaRecorder.start();$('recordSpeechBtn').disabled=true;$('stopSpeechBtn').disabled=false;$('playSpeechBtn').disabled=true;$('conversationNext').disabled=true;
+  $('recordingStatus').textContent='Recording… read the selected response aloud, then press Stop.';
+ }catch(err){$('recordingStatus').textContent='Microphone access was not granted or is unavailable. You can continue without recording.';$('conversationNext').disabled=false;}
+});
+$('stopSpeechBtn').addEventListener('click',()=>{if(mediaRecorder&&mediaRecorder.state==='recording'){mediaRecorder.stop();$('stopSpeechBtn').disabled=true;$('recordSpeechBtn').disabled=false;}});
+$('playSpeechBtn').addEventListener('click',()=>{const a=$('speechPlayback');if(a.src){a.hidden=false;a.play().catch(()=>{$('recordingStatus').textContent='Press the audio player to replay your recording.';});}});
+$('downloadSpeechBtn').addEventListener('click',()=>{
+ if(!recordedBlobUrl)return;
+ const ext=recordedMimeType.includes('ogg')?'ogg':recordedMimeType.includes('mp4')?'m4a':'webm';
+ const a=document.createElement('a');a.href=recordedBlobUrl;a.download='listen-up-round4-scenario-'+(cIndex+1)+'-'+new Date().toISOString().replace(/[:.]/g,'-')+'.'+ext;
+ document.body.appendChild(a);a.click();a.remove();
+ $('recordingStatus').textContent='Download requested. Check your device’s Downloads folder.';
+});
+$('skipSpeakingBtn').addEventListener('click',()=>{$('conversationNext').disabled=false;$('recordingStatus').textContent='Speaking practice skipped. You can still review the selected response aloud before continuing.';});
+$('conversationNext').addEventListener('click',()=>{if(!cAnswered||$('conversationNext').disabled)return;cIndex++;if(cIndex<conversationQuestions.length)renderConversationQuestion();else{scores.conversation=cScore;showResults();}});
+
+$('restartBtn').addEventListener('click',()=>{
+ stopAllAudio();resetSpeakingPractice();hTrial=0;hScore=0;hAnswered=false;hPlays=0;hSelected='';aIndex=0;aScore=0;pIndex=0;pScore=0;cIndex=0;cScore=0;scores={headphones:0,artifacts:0,pace:0,conversation:0};
+ hSequence.splice(0,hSequence.length,...shuffle(['left','right','right']));setupHeadphoneTrial();renderArtifactQuestion();renderPaceQuestion();renderConversationQuestion();showRound(1);
+});
+if('speechSynthesis'in window){window.speechSynthesis.getVoices();window.speechSynthesis.addEventListener?.('voiceschanged',()=>{});}
+$('playArtifactBtn').disabled=true;$('replayArtifactBtn').disabled=true;
+setupHeadphoneTrial();renderArtifactQuestion();renderPaceQuestion();renderConversationQuestion();prepareArtifactAudio();
+})();
+</script>
+</body>
+</html><!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Listen Up! — Audio Evaluation Challenge</title>
+<style>
+:root{
+  --ink:#172238;--muted:#647187;--paper:#f3f6fb;--panel:#fff;--line:#dce4ef;
+  --navy:#162b49;--blue:#2859a6;--blue-soft:#eaf1ff;--green:#18794e;
+  --green-soft:#eaf8f0;--red:#b42318;--red-soft:#fff0ee;--amber:#8a5700;--amber-soft:#fff6df;
+  --shadow:0 10px 28px rgba(22,43,73,.07)
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+.hero{background:linear-gradient(135deg,#132640,#244b7b);color:white;padding:34px 18px 30px}
+.wrap{width:min(1040px,100% - 32px);margin:auto}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.74rem;font-weight:800;color:#c5d8f4}
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.05;margin:8px 0 12px;letter-spacing:-.035em}
+.hero p{max-width:760px;color:#e0e9f6;margin:0}
+.hero-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.pill{border:1px solid #ffffff45;background:#ffffff10;border-radius:999px;padding:5px 10px;font-size:.8rem}
+main{padding:22px 0 50px}
+.status{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:16px;color:var(--muted)}
+.status strong{color:var(--ink);display:block;margin-bottom:2px}
+.progress-card,.round-card,.result-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.progress-card{padding:16px 18px;margin-bottom:18px}
+.progress-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.progress-top strong{font-size:.96rem}
+.progress-track{height:9px;background:#e7edf5;border-radius:999px;overflow:hidden}
+.progress-fill{height:100%;width:0;background:#4778c7;transition:width .25s}
+.round-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.round-chip{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;color:var(--muted)}
+.round-chip .num{width:31px;height:31px;border-radius:9px;background:#edf1f7;display:grid;place-items:center;font-weight:800;flex:none}
+.round-chip.active{border-color:#9db8e6;background:#f2f6ff;color:var(--ink)}
+.round-chip.active .num{background:var(--blue);color:white}
+.round-chip.done{border-color:#a8dbc1;background:#f0fbf5;color:#145c3d}
+.round-chip.done .num{background:#18794e;color:white}
+.round-chip strong{display:block;font-size:.88rem;line-height:1.25}
+.round-chip small{display:block;font-size:.75rem;margin-top:2px}
+.round-card{padding:clamp(18px,4vw,30px);min-height:350px}
+.round-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px}
+.kicker{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;font-weight:800;color:var(--blue)}
+h2{font-size:clamp(1.45rem,3vw,2rem);line-height:1.15;margin:4px 0 8px;letter-spacing:-.02em}
+h3{font-size:1.1rem;margin:0 0 8px}
+p{margin:8px 0 12px}
+.muted{color:var(--muted)}
+.round-count{font-size:.85rem;font-weight:800;background:#f0f3f8;border-radius:999px;padding:6px 10px;white-space:nowrap}
+.instruction{background:#f6f8fc;border:1px solid var(--line);border-left:4px solid #7e9fd4;border-radius:10px;padding:13px 15px;margin:16px 0}
+.button-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:10px 15px;font-weight:750;transition:transform .08s,background .15s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:white}
+.btn.primary:hover{background:#204b90}
+.btn.secondary{background:#f5f7fb}
+.btn.good{background:var(--green-soft);border-color:#9fd6b9;color:#145c3d}
+.btn.bad{background:var(--red-soft);border-color:#efb2ab;color:#8d2119}
+.choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.choice{border:1px solid var(--line);background:white;border-radius:12px;padding:13px 14px;text-align:left;font-weight:700;color:var(--ink)}
+.choice:hover:not(:disabled){border-color:#8ca9dc;background:#f7f9ff}
+.choice.selected{border-color:var(--blue);background:var(--blue-soft);box-shadow:inset 0 0 0 1px var(--blue)}
+.choice.correct{border-color:#79c59c;background:var(--green-soft)}
+.choice.incorrect{border-color:#e49b93;background:var(--red-soft)}
+.feedback{display:none;border-radius:11px;padding:13px 15px;margin-top:14px}
+.feedback.show{display:block}
+.feedback.correct{background:var(--green-soft);border:1px solid #a8dbc1;color:#145c3d}
+.feedback.incorrect{background:var(--red-soft);border:1px solid #efb2ab;color:#8d2119}
+.feedback strong{display:block;margin-bottom:3px}
+.channel-stage{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.channel{border:1px solid var(--line);border-radius:14px;background:#fbfcff;padding:16px;text-align:center}
+.channel svg{width:100%;height:70px;max-width:190px;color:#7892b8}
+.channel strong{display:block;font-size:1.1rem}
+.channel small{color:var(--muted)}
+.pace-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.pace-card{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fbfcff}
+.pace-card h3{display:flex;justify-content:space-between;align-items:center}
+.pace-card p{font-size:.9rem;color:var(--muted);min-height:44px}
+.pace-card .btn{width:100%}
+.line-quote{font-size:1.05rem;font-weight:700;background:#f6f8fc;border-radius:10px;padding:13px 15px;margin:14px 0}
+.artifact-player{display:flex;align-items:center;gap:12px;background:#f6f8fc;border:1px solid var(--line);padding:13px;border-radius:12px;margin:15px 0}
+.play-icon{width:43px;height:43px;border-radius:12px;background:var(--blue);color:white;border:0;font-size:1.05rem;flex:none}
+.player-meta{min-width:0;flex:1}
+.player-meta strong{display:block}
+.player-meta small{display:block;color:var(--muted)}
+.artifact-player .btn{flex:none}
+.note{font-size:.85rem;color:var(--muted)}
+.result-card{padding:24px;margin-top:18px}
+.result-score{font-size:clamp(2.5rem,8vw,4.2rem);font-weight:850;letter-spacing:-.05em;line-height:1.05;margin:10px 0}
+.score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}
+.score-tile{background:#f6f8fc;border:1px solid var(--line);border-radius:12px;padding:14px}
+.score-tile strong{font-size:1.45rem;display:block}
+.score-tile span{font-size:.82rem;color:var(--muted)}
+footer{color:var(--muted);font-size:.83rem;padding:20px 0 10px}
+[hidden]{display:none!important}
+@media(max-width:650px){
+ .wrap{width:min(100% - 22px,1040px)}.hero{padding:27px 0 24px}
+ .round-nav{grid-template-columns:1fr;gap:7px}
+ .round-chip{padding:9px 11px}.round-chip small{display:none}
+ .round-card{padding:18px;min-height:0}.round-head{display:block}.round-count{display:inline-block;margin-top:8px}
+ .choice-grid,.pace-pair,.score-grid{grid-template-columns:1fr}
+ .channel-stage{gap:8px}.channel{padding:12px 8px}
+ .artifact-player{align-items:flex-start;flex-wrap:wrap}.artifact-player .btn{margin-left:55px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Interactive listening skills game</div>
+    <h1>Listen Up!</h1>
+    <p>Audio Evaluation Challenge — check your listening setup, spot audio artifacts, follow voice-steering instructions, and practice reasoning and speaking in realistic conversations.</p>
+    <div class="hero-pills"><span class="pill">4 rounds</span><span class="pill">27 scored questions</span><span class="pill">Instant feedback</span><span class="pill">Speaking practice</span></div>
+  </div>
+</header>
+<main class="wrap">
+  <div id="globalStatus" class="status" role="status" aria-live="polite"><strong>Preparing your listening challenge…</strong>Complete the headphone check, identify audio artifacts, follow the voice steer, then practice reasoning and spoken responses.</div>
+  <section class="progress-card" aria-label="Game progress">
+    <div class="progress-top"><strong id="progressLabel">Round 1 of 4 · Headphone Verification</strong><span id="progressPercent">0%</span></div>
+    <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+  </section>
+  <nav class="round-nav" aria-label="Rounds">
+    <div class="round-chip active" id="chip1"><span class="num">1</span><span><strong>Headphone Check</strong><small>Confirm left and right</small></span></div>
+    <div class="round-chip" id="chip2"><span class="num">2</span><span><strong>Spot the Artifact</strong><small>Identify the audible defect</small></span></div>
+    <div class="round-chip" id="chip3"><span class="num">3</span><span><strong>Voice Steering</strong><small>Follow the delivery brief</small></span></div>
+    <div class="round-chip" id="chip4"><span class="num">4</span><span><strong>Talk to Me</strong><small>Reason, respond, speak</small></span></div>
+  </nav>
+
+  <section id="round1" class="round-card">
+    <div class="round-head"><div><div class="kicker">Round 1 · Headphone verification</div><h2>Audio Audit: Phase 1</h2><p class="muted">Listen to a short spoken prompt and identify the audible issue, if any.</p></div><span class="round-count" id="hCount">Round 1 of 5</span></div>
+    <div class="instruction"><strong>Put on your headphones</strong><br>This check covers a micro-click in the left channel, a micro-click in the right channel, a low-frequency rumble, and clean audio. Use headphones in a quiet place and keep the volume comfortable. You can play each scenario up to three times.</div>
+    <div class="line-quote" id="headphoneTranscript">“Please listen carefully to the following instruction.”</div>
+    <div class="button-row"><button class="btn primary" id="playToneBtn">▶ Play Audio</button><span class="note" id="toneStatus" aria-live="polite">Press Play Audio to hear the scenario. 3 plays left.</span></div>
+    <div class="choice-grid" id="channelChoices" hidden>
+      <button class="choice" data-channel="left">Left-ear click</button>
+      <button class="choice" data-channel="right">Right-ear click</button>
+      <button class="choice" data-channel="rumble">Low-frequency rumble</button>
+      <button class="choice" data-channel="clean">Clean audio — no background artifact</button>
+    </div>
+    <div class="button-row"><button class="btn primary" id="headphoneSubmit" disabled>Check answer</button></div>
+    <div id="headphoneFeedback" class="feedback" role="status" aria-live="polite"></div>
+    <div class="button-row"><button class="btn primary" id="headphoneNext" disabled>Next scenario</button></div>
+  </section>
+
+  <section id="round2" class="round-card" hidden>
+    <div class="round-head"><div><div class="kicker">Round 2 · Listening accuracy</div><h2>Spot the artifact</h2><p class="muted">Listen to one recording and identify the main audible issue. Focus on what you hear, not what you think caused it.</p></div><span class="round-count" id="aCount">Question 1 of 6</span></div>
+    <div class="instruction" id="artifactInstruction"><strong>Listening tip</strong><br>Compare the voice with a clean recording in your mind. Is there an unwanted layer of sound, an echo, a distortion, or a missing segment?</div>
+    <div class="artifact-player">
+      <button class="play-icon" id="playArtifactBtn" aria-label="Play audio clip">▶</button>
+      <div class="player-meta"><strong id="artifactClipTitle">Audio clip 1</strong><small id="artifactClipStatus">Loading the speech examples…</small></div>
+      <button class="btn secondary" id="replayArtifactBtn">Replay</button>
+    </div>
+    <p id="artifactPrompt" class="muted">Listen to the full clip, then choose the best description.</p>
+    <div id="artifactChoices" class="choice-grid"></div>
+    <div id="artifactFeedback" class="feedback" role="status" aria-live="polite"></div>
+    <div class="button-row"><button class="btn primary" id="artifactSubmit" disabled>Check answer</button><button class="btn primary" id="artifactNext" hidden>Next question</button></div>
+    <p class="note">These are controlled training examples mixed from one public-domain speech recording. They are demonstrations, not authentic recordings of real-world incidents.</p>
+  </section>
+
+  <section id="round3" class="round-card" hidden>
+    <div class="round-head"><div><div class="kicker">Round 3 · Voice steering</div><h2>Follow the steer</h2><p class="muted">Read the system instruction, listen to both recordings, and select the response that best follows the instruction. The spoken lines are not shown on screen.</p></div><span class="round-count" id="pCount">Uplink 1 of 9</span></div>
+    <div class="instruction" id="paceBrief"><strong>System instruction</strong><br>Listen to both responses and judge which better follows the instruction.</div>
+    <div class="pace-pair">
+      <div class="pace-card"><h3>Recording A <span class="round-count">A</span></h3><button class="btn primary pacePlay" data-version="a">▶ Play A</button></div>
+      <div class="pace-card"><h3>Recording B <span class="round-count">B</span></h3><button class="btn primary pacePlay" data-version="b">▶ Play B</button></div>
+    </div>
+    <p class="note" id="paceAudioNote">Audio is generated with your browser’s speech voice. Listen to both recordings before answering; no transcript or answer hints are shown.</p>
+    <div id="paceChoices" class="choice-grid">
+      <button class="choice" data-pace="a">Response A is better</button>
+      <button class="choice" data-pace="b">Response B is better</button>
+      <button class="choice" data-pace="same">About the same</button>
+    </div>
+    <div id="paceFeedback" class="feedback" role="status" aria-live="polite"></div>
+    <div class="button-row"><button class="btn primary" id="paceSubmit" disabled>Check answer</button><button class="btn primary" id="paceNext" hidden>Next question</button></div>
+  </section>
+
+
+  <section id="round4" class="round-card" hidden>
+    <div class="round-head"><div><div class="kicker">Round 4 · Conversation & reasoning</div><h2>Talk to Me</h2><p class="muted">Understand the situation, choose a response that makes sense, and practice delivering it aloud. Your choice is scored; speaking is a self-review exercise.</p></div><span class="round-count" id="cCount">Scenario 1 of 6</span></div>
+    <div class="instruction"><strong>How to play</strong><br>1. Read the situation or press “Hear scenario.” 2. Choose the strongest response. 3. Review the reasoning, then record yourself reading the selected response aloud. Listen back for clarity, pace, and conversational tone.</div>
+    <div class="line-quote" id="conversationScenario">Preparing your scenario…</div>
+    <div class="button-row"><button class="btn secondary" id="hearScenarioBtn">▶ Hear scenario</button></div>
+    <div id="conversationChoices" class="choice-grid"></div>
+    <div id="conversationFeedback" class="feedback" role="status" aria-live="polite"></div>
+    <div id="speakingPractice" hidden>
+      <div class="instruction"><strong>Now say it aloud</strong><br>Read the selected response naturally. Aim for clear articulation, an appropriate pace, and a tone that fits the situation. Your recording stays in this browser session and is not uploaded.</div>
+      <div class="line-quote" id="selectedResponseText"></div>
+      <div class="button-row">
+        <button class="btn primary" id="recordSpeechBtn">● Record</button>
+        <button class="btn secondary" id="stopSpeechBtn" disabled>■ Stop</button>
+        <button class="btn secondary" id="playSpeechBtn" disabled>▶ Play recording</button>
+        <button class="btn secondary" id="downloadSpeechBtn" disabled>↓ Download audio</button>
+      </div>
+      <p class="note" id="recordingStatus" role="status" aria-live="polite">Record a response, then play it back or download the audio file.</p>
+      <audio id="speechPlayback" controls hidden style="width:100%;margin-top:10px"></audio>
+    </div>
+    <p class="note">Speaking is not automatically graded. Use playback to check whether your response is easy to understand, logically organized, appropriately concise, and suitable for the conversation.</p>
+  </section>
+
+  <section id="finalResults" class="result-card" hidden aria-live="polite">
+    <div class="kicker">Challenge complete</div><h2>Your listening report</h2>
+    <div class="result-score" id="finalScore">0 / 27</div><p id="finalMessage">Your results are ready.</p>
+    <div class="score-grid">
+      <div class="score-tile"><strong id="scoreHeadphones">0 / 5</strong><span>Headphone check</span></div>
+      <div class="score-tile"><strong id="scoreArtifacts">0 / 6</strong><span>Artifact detection</span></div>
+      <div class="score-tile"><strong id="scorePace">0 / 10</strong><span>Voice steering</span></div>
+      <div class="score-tile"><strong id="scoreConversation">0 / 6</strong><span>Conversation & reasoning</span></div>
+    </div>
+    <div class="instruction"><strong>Remember</strong><br>Good evaluation depends on evidence. In conversation, listen for the actual need, reason through the constraints, respond respectfully, and speak clearly. The speaking exercise is for self-review rather than automatic scoring.</div>
+    <p class="note">Scores stay in this browser session. Recordings are kept locally for playback during the session; download any recording you want to keep before moving on or closing the game.</p>
+    <div class="button-row"><button class="btn primary" id="restartBtn">Play again</button></div>
+  </section>
+  <footer>Listen Up! · Audio Evaluation Challenge. Round 1 uses browser-generated audio examples; headphone playback is recommended for best spatial listening. Speech synthesis and microphone recording depend on browser/device support.</footer>
+</main>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const speechText='I remember the day we first arrived, and everything that happened after that.';
+const cleanURL='https://archive.org/download/spc266_2508_librivox/spc266_afterlove_pac_128kb.mp3';
+let audioContext=null,toneOsc=null,toneGain=null,currentAudio=null,currentAudioUrl=null;
+let hTrial=0,hTarget='left',hScore=0,hAnswered=false,hPlays=0,hSelected='';
+let aIndex=0,aScore=0,aSelected='',aAnswered=false,aUrls={};
+let pIndex=0,pScore=0,pSelected='',pAnswered=false;
+let cIndex=0,cScore=0,cSelected='',cAnswered=false;
+let mediaRecorder=null,recordedChunks=[],recordedBlobUrl=null,recordingStream=null,recordedMimeType='audio/webm';
+let scores={headphones:0,artifacts:0,pace:0,conversation:0};
+const hSequence=['left','right','rumble','clean','right'];
+const hAuditItems=[
+ {type:'left',explain:'A brief micro-click was added to the left channel.'},
+ {type:'right',explain:'A brief micro-click was added to the right channel.'},
+ {type:'rumble',explain:'A low 45 Hz rumble was added under the spoken prompt.'},
+ {type:'clean',explain:'This is the clean reference; no background artifact was added.'},
+ {type:'right',explain:'A brief micro-click was added to the right channel again. Listen for its position rather than guessing from the previous round.'}
+];
+const paceQuestions=[
+ {axis:'speaking-rate: slow',brief:'Speak very slowly and deliberately, taking your time.',textA:'Take a deep breath. Focus on the moment. Everything will be okay.',aRate:.5,aPitch:1,textB:'Take a deep breath. Focus on the moment. Everything will be okay.',bRate:1,bPitch:1,correct:'a',explain:"Response A uses a much slower speaking rate, matching the instruction to speak very slowly and deliberately."},
+ {axis:'expressiveness: flat',brief:'Speak in a completely flat, robotic, and emotionless tone.',textA:'I have calculated the probability of success. It is precisely 42 percent.',aRate:1,aPitch:1.3,textB:'I have calculated the probability of success. It is precisely 42 percent.',bRate:.9,bPitch:.1,correct:'b',explain:'Response B uses a much lower pitch setting to approximate a flat, robotic delivery.'},
+ {axis:'verbosity: extreme-terse',brief:'Provide only the most critical fact with zero elaboration.',textA:'Well, if you look at the sky, you will notice that the reason it appears blue is because of Rayleigh scattering.',aRate:1,aPitch:1,textB:'The sky is blue due to Rayleigh scattering.',bRate:1,bPitch:1,correct:'b',explain:'Response B gives only the essential fact. Response A adds conversational framing and elaboration.'},
+ {axis:'formality: chatty-friend',brief:'Speak casually, warmly, and informally.',textA:"Hey there! How's it going? So glad you could make it today, it's awesome to see you!",aRate:1.1,aPitch:1.2,textB:'Greetings. I acknowledge your arrival at this location. It is satisfactory.',bRate:.9,bPitch:.8,correct:'a',explain:'Response A uses casual, warm, informal phrasing suited to a chatty friend.'},
+ {axis:'speaking-rate: fast',brief:'Deliver the response quickly and with urgency.',textA:'The system is experiencing a critical failure. Please evacuate the premises immediately.',aRate:1,aPitch:1,textB:'The system is experiencing a critical failure. Please evacuate the premises immediately.',bRate:1.7,bPitch:1,correct:'b',explain:'Response B accelerates the speaking rate to match the instruction to deliver the response quickly and urgently.'},
+ {axis:'verbosity: balanced',brief:'Give the user the context needed to understand the answer, then stop.',textA:'Most people give up on resolutions because they set vague goals without a clear plan.',aRate:1,aPitch:1,textB:'People quit resolutions because their goals are too broad without a roadmap.',bRate:1,bPitch:1,correct:'same',explain:'Both responses are concise and provide a useful explanation without excessive detail. The wording differs, but both fit the steer.'},
+ {axis:'expressiveness: theatrical',brief:'Deliver the lines with high drama, extreme emotion, and theatrical flair.',textA:'To be, or not to be. That is the question.',aRate:.8,aPitch:1.8,textB:'To be, or not to be. That is the question.',bRate:1,bPitch:1,correct:'a',explain:'Response A uses a more dramatic pitch setting and slower pacing to approximate theatrical delivery.'},
+ {axis:'formality: executive-assistant',brief:'Speak in a highly professional, polite, and polished tone.',textA:'Your meeting has been scheduled for 3 PM. I have attached the agenda for your review.',aRate:1,aPitch:1,textB:'Okay cool, I threw that meeting on your cal for 3. Check out the notes I slapped in there.',bRate:1.1,bPitch:1.1,correct:'a',explain:'Response A uses professional, polished wording appropriate for an executive assistant. Response B is casual and slangy.'},
+ {axis:'speaking-rate: very-slow',brief:'Speak at an agonizingly slow pace. Drag out the words.',textA:'I am walking as slow as I possibly can.',aRate:.8,aPitch:1,textB:'I am walking as slow as I possibly can.',bRate:.2,bPitch:1,correct:'b',explain:'Response B uses an extremely low speaking rate, matching the instruction to drag out the words.'},
+ {axis:'verbosity: detailed',brief:'Provide a comprehensive, exhaustive, and highly detailed answer.',textA:'Photosynthesis is the process by which green plants use sunlight to synthesize foods from carbon dioxide and water, generating oxygen as a byproduct.',aRate:1,aPitch:1,textB:'Plants use sunlight to make their own food in a process called photosynthesis.',bRate:1,bPitch:1,correct:'a',explain:'Response A provides more detail than Response B and better matches the request for a comprehensive answer.'}
+];
+const artifactQuestions=[
+ {key:'clean',title:'Clip 1',prompt:'Which description best matches the recording?',choices:['No obvious artifact','Background hiss or static','A distinct echo','Speech distortion'],correct:'No obvious artifact',explain:'This is the clean reference. No added artifact is intended to stand out.'},
+ {key:'hiss',title:'Clip 2',prompt:'What is the main issue you hear?',choices:['Unexpected beep','Background hiss or static','Audio dropout','No obvious artifact'],correct:'Background hiss or static',explain:'A continuous layer of high-frequency noise sits underneath the voice.'},
+ {key:'beep',title:'Clip 3',prompt:'What is the main issue you hear?',choices:['Speech distortion','Background hiss or static','Unexpected beep or electronic tone','A distinct echo'],correct:'Unexpected beep or electronic tone',explain:'Short electronic tones interrupt the speech. They are separate from the spoken content.'},
+ {key:'echo',title:'Clip 4',prompt:'What is the main issue you hear?',choices:['A distinct echo','No obvious artifact','Audio dropout','Background hiss or static'],correct:'A distinct echo',explain:'A delayed repeat follows the original voice. That is different from reverberation, which blends into a lingering tail.'},
+ {key:'distortion',title:'Clip 5',prompt:'What is the main issue you hear?',choices:['Unexpected beep','No obvious artifact','Speech distortion','Audio dropout'],correct:'Speech distortion',explain:'The voice itself sounds unnaturally harsh or clipped. The change is in the speech signal, not just a background layer.'},
+ {key:'dropout',title:'Clip 6',prompt:'What is the main issue you hear?',choices:['Background hiss or static','A distinct echo','Audio dropout','Unexpected beep'],correct:'Audio dropout',explain:'A short section of the voice disappears, then the recording continues.'}
+];
+function stopAllAudio(){
+ if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;currentAudio=null;}
+ currentAudioUrl=null;
+ if(window.speechSynthesis)window.speechSynthesis.cancel();
+ if(toneOsc){try{toneOsc.stop();}catch(e){}toneOsc=null;}
+ if(toneGain){try{toneGain.disconnect();}catch(e){}toneGain=null;}
+}
+function setStatus(title,detail){$('globalStatus').innerHTML='<strong>'+title+'</strong>'+detail;}
+function updateProgress(){
+ let done=0,total=27,label='Round 1 of 4 · Headphone Verification',active=1;
+ if(!$('finalResults').hidden){done=27;label='Challenge complete';active=4;}
+ else if(!$('round4').hidden){done=21+cIndex;label='Round 4 of 4 · Talk to Me';active=4;}
+ else if(!$('round3').hidden){done=11+pIndex;label='Round 3 of 4 · Follow the Steer';active=3;}
+ else if(!$('round2').hidden){done=5+aIndex;label='Round 2 of 4 · Spot the Artifact';active=2;}
+ else{done=hTrial;label='Round 1 of 4 · Headphone Verification';active=1;}
+ $('progressLabel').textContent=label;$('progressPercent').textContent=Math.round(done/total*100)+'%';$('progressFill').style.width=(done/total*100)+'%';
+ for(let i=1;i<=4;i++){$('chip'+i).classList.toggle('active',i===active);$('chip'+i).classList.toggle('done',i<active||(!$('finalResults').hidden));}
+}
+function showRound(n){
+ stopAllAudio();
+ ['round1','round2','round3','round4','finalResults'].forEach((id,i)=>$(id).hidden=(i!==n-1));
+ updateProgress();window.scrollTo({top:0,behavior:'smooth'});
+}
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function playTone(){
+ if(hPlays>=3){$('toneStatus').textContent='No plays left for this scenario. Select your answer.';return;}
+ stopAllAudio();
+ hPlays++;
+ const q=hAuditItems[hTrial];
+ const AC=window.AudioContext||window.webkitAudioContext;
+ $('channelChoices').hidden=true;$('headphoneSubmit').disabled=true;
+ $('headphoneFeedback').className='feedback';$('headphoneFeedback').textContent='';
+ $('toneStatus').textContent='Playing audio…';
+ if(!('speechSynthesis' in window)){ $('toneStatus').textContent='Speech synthesis is not supported in this browser. Try a current browser.';return;}
+ const u=new SpeechSynthesisUtterance('Please listen carefully. This is a headphone verification sample. Thank you.');
+ const voices=window.speechSynthesis.getVoices();
+ const voice=voices.find(v=>/^en(-|_|$)/i.test(v.lang))||voices.find(v=>/english/i.test(v.name));
+ if(voice)u.voice=voice;u.lang=voice?.lang||'en-US';u.rate=.95;u.pitch=1;u.volume=1;
+ if(AC && q.type!=='clean'){
+   try{
+     audioContext=audioContext||new AC();
+     if(audioContext.state==='suspended')audioContext.resume();
+     const startAt=audioContext.currentTime+.65;
+     if(q.type==='left'||q.type==='right'){
+       const pan=audioContext.createStereoPanner?audioContext.createStereoPanner():null;
+       const osc=audioContext.createOscillator(),gain=audioContext.createGain();
+       osc.type='triangle';osc.frequency.value=1200;
+       gain.gain.setValueAtTime(.0001,startAt);
+       gain.gain.exponentialRampToValueAtTime(.075,startAt+.004);
+       gain.gain.exponentialRampToValueAtTime(.0001,startAt+.025);
+       gain.gain.setValueAtTime(.0001,startAt+.38);
+       gain.gain.exponentialRampToValueAtTime(.065,startAt+.384);
+       gain.gain.exponentialRampToValueAtTime(.0001,startAt+.405);
+       osc.connect(gain);
+       if(pan){pan.pan.value=q.type==='left'?-1:1;gain.connect(pan);pan.connect(audioContext.destination);}
+       else gain.connect(audioContext.destination);
+       osc.start(startAt);osc.stop(startAt+.42);toneOsc=osc;toneGain=gain;
+     }else if(q.type==='rumble'){
+       const osc=audioContext.createOscillator(),gain=audioContext.createGain();
+       osc.type='sine';osc.frequency.value=45;
+       gain.gain.setValueAtTime(.0001,startAt);
+       gain.gain.linearRampToValueAtTime(.12,startAt+.18);
+       gain.gain.setValueAtTime(.12,startAt+2.1);
+       gain.gain.linearRampToValueAtTime(.0001,startAt+2.45);
+       osc.connect(gain);gain.connect(audioContext.destination);
+       osc.start(startAt);osc.stop(startAt+2.5);toneOsc=osc;toneGain=gain;
+     }
+   }catch(err){console.warn('Could not create audio artifact',err);}
+ }
+ u.onstart=()=>{$('toneStatus').textContent='Listen for the artifact, if there is one. '+(3-hPlays)+' plays left after this one.';};
+ u.onend=()=>{$('toneStatus').textContent=hPlays>=3?'Audio finished. No plays left; select your answer.':'Audio finished. You may replay '+(3-hPlays)+' more time(s).';$('channelChoices').hidden=false;};
+ window.speechSynthesis.speak(u);
+}
+function setupHeadphoneTrial(){
+ hAnswered=false;hSelected='';hPlays=0;
+ hTarget=hSequence[hTrial]||'clean';
+ $('hCount').textContent='Round '+(hTrial+1)+' of '+hAuditItems.length;
+ $('headphoneTranscript').textContent='“Please listen carefully to the following instruction.”';
+ $('toneStatus').textContent='Press Play Audio to hear the scenario. 3 plays left.';
+ $('channelChoices').hidden=true;
+ $('channelChoices').querySelectorAll('[data-channel]').forEach(btn=>{
+   btn.disabled=false;btn.classList.remove('selected','correct','incorrect');
+ });
+ $('headphoneFeedback').className='feedback';$('headphoneFeedback').textContent='';
+ $('headphoneSubmit').disabled=true;$('headphoneNext').disabled=true;
+ $('playToneBtn').disabled=false;updateProgress();
+}
+$('playToneBtn').addEventListener('click',playTone);
+$('channelChoices').querySelectorAll('[data-channel]').forEach(btn=>btn.addEventListener('click',()=>{
+ if(hAnswered)return;hSelected=btn.dataset.channel;
+ $('channelChoices').querySelectorAll('[data-channel]').forEach(b=>b.classList.toggle('selected',b===btn));
+ $('headphoneSubmit').disabled=false;
+}));
+$('headphoneSubmit').addEventListener('click',()=>{
+ if(hAnswered||!hSelected)return;hAnswered=true;
+ const q=hAuditItems[hTrial],ok=hSelected===q.type;if(ok)hScore++;
+ $('channelChoices').querySelectorAll('[data-channel]').forEach(b=>{b.disabled=true;if(b.dataset.channel===q.type)b.classList.add('correct');else if(b.dataset.channel===hSelected)b.classList.add('incorrect');});
+ const fb=$('headphoneFeedback');fb.className='feedback show '+(ok?'correct':'incorrect');
+ fb.innerHTML='<strong>'+(ok?'Correct.':'Not quite.')+'</strong>'+q.explain;
+ $('headphoneSubmit').disabled=true;$('playToneBtn').disabled=true;$('headphoneNext').disabled=false;
+});
+$('headphoneNext').addEventListener('click',()=>{
+ if(!hAnswered)return;hTrial++;
+ if(hTrial<hAuditItems.length){setupHeadphoneTrial();}
+ else{scores.headphones=hScore;showRound(2);renderArtifactQuestion();}
+});
+function makeNoiseBuffer(ctx,duration){
+ const length=Math.ceil(ctx.sampleRate*duration),buf=ctx.createBuffer(1,length,ctx.sampleRate),d=buf.getChannelData(0);let last=0;
+ for(let i=0;i<length;i++){const white=Math.random()*2-1;last=.88*last+.22*white;d[i]=last;}
+ let peak=0;for(let i=0;i<length;i++)peak=Math.max(peak,Math.abs(d[i]));if(peak)for(let i=0;i<length;i++)d[i]/=peak;
+ return buf;
+}
+function addToneToOffline(ctx,dest,freq,amp,start,duration,type){
+ if(start>=ctx.length/ctx.sampleRate)return;
+ const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type||'sine';osc.frequency.value=freq;
+ gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(amp,start+.012);gain.gain.setValueAtTime(amp,Math.max(start+.02,start+duration-.02));gain.gain.linearRampToValueAtTime(0,Math.min(ctx.length/ctx.sampleRate,start+duration));
+ osc.connect(gain);gain.connect(dest);osc.start(start);osc.stop(Math.min(ctx.length/ctx.sampleRate,start+duration+.02));
+}
+function addHiss(ctx,dest,duration){
+ const src=ctx.createBufferSource();src.buffer=makeNoiseBuffer(ctx,duration);
+ const filter=ctx.createBiquadFilter();filter.type='highpass';filter.frequency.value=1500;
+ const gain=ctx.createGain();gain.gain.value=.026;
+ src.connect(filter);filter.connect(gain);gain.connect(dest);src.start(0);
+}
+function toWav(buffer){
+ const d=buffer.getChannelData(0),sr=buffer.sampleRate,out=new ArrayBuffer(44+d.length*2),v=new DataView(out);
+ const put=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+ put(0,'RIFF');v.setUint32(4,36+d.length*2,true);put(8,'WAVE');put(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);put(36,'data');v.setUint32(40,d.length*2,true);
+ for(let i=0;i<d.length;i++){const x=Math.max(-1,Math.min(1,d[i]));v.setInt16(44+i*2,x<0?x*32768:x*32767,true);}
+ return new Blob([out],{type:'audio/wav'});
+}
+async function renderArtifact(kind,decoded,startAt,duration){
+ const sr=22050,ctx=new OfflineAudioContext(1,Math.ceil(duration*sr),sr),mix=ctx.createGain();mix.gain.value=.92;mix.connect(ctx.destination);
+ const voice=ctx.createBufferSource();voice.buffer=decoded;
+ const voiceGain=ctx.createGain();voiceGain.gain.value=.92;
+ let node=voice;
+ if(kind==='distortion'){
+   const sh=ctx.createWaveShaper(),curve=new Float32Array(2048);
+   for(let i=0;i<curve.length;i++){const x=i*2/(curve.length-1)-1;curve[i]=Math.max(-.25,Math.min(.25,x));}
+   sh.curve=curve;sh.oversample='4x';voice.connect(sh);node=sh;
+ }
+ node.connect(voiceGain);voiceGain.connect(mix);
+ if(kind==='dropout'){
+   [[1.45,1.72],[4.15,4.43],[6.0,6.2]].forEach(([a,b])=>{if(a<duration){voiceGain.gain.setValueAtTime(.92,a);voiceGain.gain.setValueAtTime(0,a+.012);voiceGain.gain.setValueAtTime(0,Math.min(b,duration));voiceGain.gain.setValueAtTime(.92,Math.min(b+.012,duration));}});
+ }
+ voice.start(0,startAt,duration);voice.stop(duration);
+ if(kind==='hiss')addHiss(ctx,mix,duration);
+ if(kind==='beep'){[1.2,3.35,5.7].forEach(t=>{addToneToOffline(ctx,mix,1250,.075,t,.19,'square');addToneToOffline(ctx,mix,1650,.038,t+.02,.15,'sine');});}
+ if(kind==='echo'){
+   const echo=ctx.createDelay(1);echo.delayTime.value=.38;const wet=ctx.createGain();wet.gain.value=.32;
+   voice.connect(echo);echo.connect(wet);wet.connect(mix);
+ }
+ const rendered=await ctx.startRendering();const data=rendered.getChannelData(0);let peak=0;for(let i=0;i<data.length;i++)peak=Math.max(peak,Math.abs(data[i]));
+ if(peak>0){const scale=.82/peak;for(let i=0;i<data.length;i++)data[i]*=scale;}
+ return toWav(rendered);
+}
+async function prepareArtifactAudio(){
+ try{
+   setStatus('Preparing artifact audio…','Loading one public-domain speech sample and creating clean and modified versions. This may take a few seconds.');
+   const res=await fetch(cleanURL,{mode:'cors',cache:'force-cache'});if(!res.ok)throw new Error('Audio source returned HTTP '+res.status);
+   const ab=await res.arrayBuffer();const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('Web Audio is not supported in this browser.');
+   const ac=new AC();const decoded=await ac.decodeAudioData(ab.slice(0));const duration=Math.min(8.4,decoded.duration);const startAt=Math.min(17.55,Math.max(0,decoded.duration-duration));
+   const types=['clean','hiss','beep','echo','distortion','dropout'];
+   for(let i=0;i<types.length;i++){
+     const blob=await renderArtifact(types[i],decoded,startAt,duration);aUrls[types[i]]=URL.createObjectURL(blob);
+     $('artifactClipStatus').textContent='Prepared '+(i+1)+' of '+types.length+' clips…';
+   }
+   await ac.close();$('artifactClipStatus').textContent='Speech clips ready. Press Play to listen.';
+   $('playArtifactBtn').disabled=false;$('replayArtifactBtn').disabled=false;
+   setStatus('Audio examples ready.','The headphone check, artifact round, and pacing round are ready. Audio clips play one at a time.');
+ }catch(err){
+   console.error(err);$('artifactClipStatus').textContent='Speech sample could not be loaded.';
+   $('playArtifactBtn').disabled=true;$('replayArtifactBtn').disabled=true;
+   setStatus('Artifact audio could not load.','Check your internet connection or open the HTML from a browser that can access Archive.org. The other rounds remain available for preview, but Round 2 needs the speech source.');
+ }
+}
+function playArtifact(){
+ const q=artifactQuestions[aIndex];const url=aUrls[q.key];if(!url)return;
+ stopAllAudio();currentAudioUrl=url;currentAudio=new Audio(url);currentAudio.play().catch(err=>{console.warn(err);$('artifactClipStatus').textContent='Playback was blocked. Press Play again to allow audio.';});
+ $('artifactClipStatus').textContent='Playing '+q.title.toLowerCase()+'.';
+ currentAudio.onended=()=>{$('artifactClipStatus').textContent='Clip finished. You can replay it before answering.';currentAudio=null;};
+}
+$('playArtifactBtn').addEventListener('click',playArtifact);$('replayArtifactBtn').addEventListener('click',playArtifact);
+function renderArtifactQuestion(){
+ const q=artifactQuestions[aIndex];aSelected='';aAnswered=false;$('aCount').textContent='Question '+(aIndex+1)+' of '+artifactQuestions.length;
+ $('artifactClipTitle').textContent=q.title;$('artifactClipStatus').textContent=aUrls[q.key]?'Press Play to listen.':'Preparing speech clips…';
+ $('artifactPrompt').textContent=q.prompt;$('artifactFeedback').className='feedback';$('artifactFeedback').textContent='';$('artifactSubmit').hidden=false;$('artifactSubmit').disabled=true;$('artifactNext').hidden=true;
+ const holder=$('artifactChoices');holder.innerHTML='';
+ q.choices.forEach(choice=>{const b=document.createElement('button');b.type='button';b.className='choice';b.textContent=choice;b.addEventListener('click',()=>{if(aAnswered)return;aSelected=choice;holder.querySelectorAll('button').forEach(x=>x.classList.toggle('selected',x===b));$('artifactSubmit').disabled=false;});holder.appendChild(b);});
+ $('playArtifactBtn').disabled=!aUrls[q.key];$('replayArtifactBtn').disabled=!aUrls[q.key];updateProgress();
+}
+$('artifactSubmit').addEventListener('click',()=>{
+ if(aAnswered||!aSelected)return;aAnswered=true;const q=artifactQuestions[aIndex],ok=aSelected===q.correct;if(ok)aScore++;
+ $('artifactChoices').querySelectorAll('button').forEach(b=>{b.disabled=true;if(b.textContent===q.correct)b.classList.add('correct');else if(b.textContent===aSelected)b.classList.add('incorrect');});
+ const fb=$('artifactFeedback');fb.className='feedback show '+(ok?'correct':'incorrect');fb.innerHTML='<strong>'+(ok?'Correct.':'Not quite.')+'</strong>'+q.explain;
+ $('artifactSubmit').hidden=true;$('artifactNext').hidden=false;$('artifactNext').textContent=aIndex===artifactQuestions.length-1?'Continue to Round 3':'Next question';
+});
+$('artifactNext').addEventListener('click',()=>{
+ if(!aAnswered)return;aIndex++;
+ if(aIndex<artifactQuestions.length){renderArtifactQuestion();}
+ else{scores.artifacts=aScore;showRound(3);renderPaceQuestion();}
+});
+function playPace(version){
+ stopAllAudio();if(!('speechSynthesis'in window)){ $('paceAudioNote').textContent='Speech synthesis is not supported in this browser. Try a current version of Chrome, Edge, or Safari.';return;}
+ const q=paceQuestions[pIndex],u=new SpeechSynthesisUtterance(version==='a'?q.textA:q.textB);
+ const voices=window.speechSynthesis.getVoices();const voice=voices.find(v=>/^en(-|_|$)/i.test(v.lang))||voices.find(v=>/english/i.test(v.name));if(voice)u.voice=voice;
+ u.lang=voice?.lang||'en-US';
+ u.rate=version==='a'?q.aRate:q.bRate;
+ u.pitch=version==='a'?(q.aPitch??1):(q.bPitch??1);
+ u.volume=1;
+ window.speechSynthesis.speak(u);
+}
+document.querySelectorAll('.pacePlay').forEach(b=>b.addEventListener('click',()=>playPace(b.dataset.version)));
+function renderPaceQuestion(){
+ const q=paceQuestions[pIndex];pSelected='';pAnswered=false;$('pCount').textContent='Uplink '+(pIndex+1)+' of '+paceQuestions.length+' · '+q.axis;
+ $('paceBrief').innerHTML='<strong>Delivery brief</strong><br>'+q.brief;
+ $('paceChoices').querySelectorAll('button').forEach(b=>{b.disabled=false;b.classList.remove('selected','correct','incorrect');b.onclick=()=>{if(pAnswered)return;pSelected=b.dataset.pace;$('paceChoices').querySelectorAll('button').forEach(x=>x.classList.toggle('selected',x===b));$('paceSubmit').disabled=false;};});
+ $('paceFeedback').className='feedback';$('paceFeedback').textContent='';$('paceSubmit').hidden=false;$('paceSubmit').disabled=true;$('paceNext').hidden=true;updateProgress();
+}
+$('paceSubmit').addEventListener('click',()=>{
+ if(pAnswered||!pSelected)return;pAnswered=true;const q=paceQuestions[pIndex],ok=pSelected===q.correct;if(ok)pScore++;
+ $('paceChoices').querySelectorAll('button').forEach(b=>{b.disabled=true;if(b.dataset.pace===q.correct)b.classList.add('correct');else if(b.dataset.pace===pSelected)b.classList.add('incorrect');});
+ const fb=$('paceFeedback');fb.className='feedback show '+(ok?'correct':'incorrect');fb.innerHTML='<strong>'+(ok?'Correct.':'Not quite.')+'</strong>'+q.explain;
+ $('paceSubmit').hidden=true;$('paceNext').hidden=false;$('paceNext').textContent=pIndex===paceQuestions.length-1?'Continue to Round 4':'Next question';
+});
+$('paceNext').addEventListener('click',()=>{
+ if(!pAnswered)return;pIndex++;
+ if(pIndex<paceQuestions.length){renderPaceQuestion();}
+ else{scores.pace=pScore;showRound(4);renderConversationQuestion();}
+});
+function showResults(){
+ stopAllAudio();showRound(5);const total=scores.headphones+scores.artifacts+scores.pace+scores.conversation;
+ $('finalScore').textContent=total+' / 27';$('scoreHeadphones').textContent=scores.headphones+' / 5';$('scoreArtifacts').textContent=scores.artifacts+' / 6';$('scorePace').textContent=scores.pace+' / '+paceQuestions.length;$('scoreConversation').textContent=scores.conversation+' / '+conversationQuestions.length;
+ $('finalMessage').textContent=total>=22?'Excellent work. Keep applying evidence-based listening, sound judgment, and clear communication.':total>=16?'Good work. Review missed explanations and keep practicing careful listening and clear responses.':'You have a useful starting point. Review the feedback and practice explaining your reasoning clearly.';
+ updateProgress();
+}
+const conversationQuestions=[
+ {scenario:"A teammate says: “I need the report by noon, but the data team says the final numbers will not arrive until 2 p.m.” What is the most useful response?",options:[
+  "“Send it as complete at noon, then quietly add the missing figures later.”",
+  "“Let's flag the gap and agree on an interim report or later deadline.”",
+  "“Tell the data team to hurry; the deadline cannot move.”"
+ ],correct:1,explain:"This response identifies what can be done now, makes the missing data visible, and agrees on a realistic next step.",speak:"Let's confirm what is ready, flag the missing figures, and agree on an interim report or a later deadline."},
+ {scenario:"In a meeting, someone says: “Can you make the summary shorter?” You are not sure whether they want fewer words or fewer sections. What should you say?",options:[
+  "“Do you mean fewer words or fewer sections?”",
+  "“I can remove the introduction and final section to shorten it.”",
+  "“I will cut some wording and remove a section to make it shorter.”"
+ ],correct:0,explain:"A brief clarification avoids guessing and lets the other person specify what “shorter” means.",speak:"Sure. Should I cut the wording or reduce the sections?"},
+ {scenario:"A colleague tells you: “I’m overwhelmed. Three people have asked me for urgent work today.” Which response best supports the conversation and moves toward a solution?",options:[
+  "“That happens to everyone; just do the oldest task first and work through the list.”",
+  "“You should tell them all that you cannot help today.”",
+  "“That sounds rough. Want to rank the deadlines together?”"
+ ],correct:2,explain:"It acknowledges the colleague's feelings and offers a practical next step without blaming anyone.",speak:"That sounds stressful. Want to sort the deadlines together?"},
+ {scenario:"A customer asks whether a feature will definitely be available next Friday. You have heard that it is planned, but you have no confirmed release date. What is the best answer?",options:[
+  "“Yes, next Friday is confirmed. You can count on it.”",
+  "“It’s planned for Friday, but I’ll confirm the date.”",
+  "“I cannot confirm it yet; I can check with the development team and follow up.”"
+ ],correct:1,explain:"This answer is concise, distinguishes a plan from a confirmed date, and commits to a useful follow-up.",speak:"It is planned for Friday, but I’ll verify the date first."},
+ {scenario:"A teammate disagrees with your proposal and says: “I don’t think this approach will work.” You want to understand the objection without escalating the disagreement. What should you say?",options:[
+  "“What risk concerns you most? Let's compare options.”",
+  "“I hear your concern, but I still think my proposal is the better option for this situation.”",
+  "“Okay, perhaps you can suggest another plan that would work better for the team.”"
+ ],correct:0,explain:"It asks for the specific concern and turns the disagreement into a comparison of options.",speak:"What is the main risk you see? Let's compare the options."},
+ {scenario:"Someone asks for quick directions while you are both standing outside a large building. They need to reach the visitor desk on the second floor. Which response is clearest to say aloud?",options:[
+  "“It should be somewhere upstairs near reception, I think.”",
+  "“Go in, take the elevator to floor two, then turn left.”",
+  "“Look around inside; you will probably find the visitor desk.”"
+ ],correct:1,explain:"It gives the key actions in order and is concise enough to follow while walking. Add a landmark if the person needs more help.",speak:"Go in, take the elevator to floor two, then turn left."}
+];
+function hearConversationScenario(){
+ const q=conversationQuestions[cIndex];
+ if(!('speechSynthesis' in window)){ $('recordingStatus').textContent='Scenario audio is not supported in this browser; use the written scenario.';return; }
+ stopAllAudio();const u=new SpeechSynthesisUtterance(q.scenario);
+ const voices=window.speechSynthesis.getVoices();const voice=voices.find(v=>/^en(-|_|$)/i.test(v.lang))||voices.find(v=>/english/i.test(v.name));if(voice)u.voice=voice;
+ u.lang=voice?.lang||'en-US';u.rate=.96;u.pitch=1;u.volume=1;window.speechSynthesis.speak(u);
+}
+function cleanupRecording(){
+ if(recordingStream){recordingStream.getTracks().forEach(t=>t.stop());recordingStream=null;}
+ if(recordedBlobUrl){URL.revokeObjectURL(recordedBlobUrl);recordedBlobUrl=null;}
+ recordedChunks=[];mediaRecorder=null;
+}
+function resetSpeakingPractice(){
+ if(mediaRecorder&&mediaRecorder.state==='recording'){try{mediaRecorder.stop();}catch(e){}}
+ cleanupRecording();
+ $('speechPlayback').pause();$('speechPlayback').removeAttribute('src');$('speechPlayback').hidden=true;
+ $('recordSpeechBtn').disabled=false;$('stopSpeechBtn').disabled=true;$('playSpeechBtn').disabled=true;$('downloadSpeechBtn').disabled=true;
+ $('recordingStatus').textContent='Recording requires microphone permission. You can also continue without recording.';
+ $('conversationNext').disabled=true;
+}
+function renderConversationQuestion(){
+ resetSpeakingPractice();
+ const q=conversationQuestions[cIndex];cSelected='';cAnswered=false;
+ $('cCount').textContent='Scenario '+(cIndex+1)+' of '+conversationQuestions.length;
+ $('conversationScenario').textContent=q.scenario;
+ $('conversationFeedback').className='feedback';$('conversationFeedback').textContent='';
+ $('speakingPractice').hidden=true;$('conversationSubmit').disabled=false;
+ const holder=$('conversationChoices');holder.innerHTML='';
+ q.options.forEach((option,i)=>{
+  const b=document.createElement('button');b.type='button';b.className='choice';b.textContent=option;
+  b.addEventListener('click',()=>{if(cAnswered)return;cSelected=String(i);holder.querySelectorAll('button').forEach(x=>x.classList.toggle('selected',x===b));});
+  holder.appendChild(b);
+ });
+ updateProgress();
+}
+$('hearScenarioBtn').addEventListener('click',hearConversationScenario);
+$('conversationChoices').insertAdjacentHTML('afterend','<div class="button-row" id="conversationSubmitRow"><button class="btn primary" id="conversationSubmit">Check response</button></div>');
+$('conversationSubmit').addEventListener('click',()=>{
+ if(cAnswered||cSelected==='')return;cAnswered=true;
+ const q=conversationQuestions[cIndex],ok=Number(cSelected)===q.correct;if(ok)cScore++;
+ $('conversationChoices').querySelectorAll('button').forEach((b,i)=>{b.disabled=true;if(i===q.correct)b.classList.add('correct');else if(String(i)===cSelected)b.classList.add('incorrect');});
+ const fb=$('conversationFeedback');fb.className='feedback show '+(ok?'correct':'incorrect');fb.innerHTML='<strong>'+(ok?'Strong choice.':'Review the stronger response.')+'</strong>'+q.explain;
+ $('selectedResponseText').textContent=q.speak;$('speakingPractice').hidden=false;
+ $('conversationSubmit').disabled=true;$('conversationNext').textContent=cIndex===conversationQuestions.length-1?'See results':'Next scenario';
+ updateProgress();
+});
+$('recordSpeechBtn').addEventListener('click',async()=>{
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){$('recordingStatus').textContent='Microphone recording is not supported in this browser. You can still read the response aloud and continue.';$('conversationNext').disabled=false;return;}
+ try{
+  if(recordedBlobUrl){URL.revokeObjectURL(recordedBlobUrl);recordedBlobUrl=null;}
+  recordedChunks=[];recordingStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  const mime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':(MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'');
+  mediaRecorder=mime?new MediaRecorder(recordingStream,{mimeType:mime}):new MediaRecorder(recordingStream);
+  mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size)recordedChunks.push(e.data);};
+  mediaRecorder.onstop=()=>{
+   recordedMimeType=mediaRecorder?.mimeType||'audio/webm';
+   const blob=new Blob(recordedChunks,{type:recordedMimeType});
+   if(recordedBlobUrl)URL.revokeObjectURL(recordedBlobUrl);
+   recordedBlobUrl=URL.createObjectURL(blob);$('speechPlayback').src=recordedBlobUrl;$('speechPlayback').hidden=false;
+   $('playSpeechBtn').disabled=false;$('downloadSpeechBtn').disabled=false;$('conversationNext').disabled=false;
+   $('recordingStatus').textContent='Recording ready. Play it back or download the audio file. It has not been uploaded.';
+   if(recordingStream){recordingStream.getTracks().forEach(t=>t.stop());recordingStream=null;}
+  };
+  mediaRecorder.start();$('recordSpeechBtn').disabled=true;$('stopSpeechBtn').disabled=false;$('playSpeechBtn').disabled=true;$('conversationNext').disabled=true;
+  $('recordingStatus').textContent='Recording… read the selected response aloud, then press Stop.';
+ }catch(err){$('recordingStatus').textContent='Microphone access was not granted or is unavailable. You can continue without recording.';$('conversationNext').disabled=false;}
+});
+$('stopSpeechBtn').addEventListener('click',()=>{if(mediaRecorder&&mediaRecorder.state==='recording'){mediaRecorder.stop();$('stopSpeechBtn').disabled=true;$('recordSpeechBtn').disabled=false;}});
+$('playSpeechBtn').addEventListener('click',()=>{const a=$('speechPlayback');if(a.src){a.hidden=false;a.play().catch(()=>{$('recordingStatus').textContent='Press the audio player to replay your recording.';});}});
+$('downloadSpeechBtn').addEventListener('click',()=>{
+ if(!recordedBlobUrl)return;
+ const ext=recordedMimeType.includes('ogg')?'ogg':recordedMimeType.includes('mp4')?'m4a':'webm';
+ const a=document.createElement('a');a.href=recordedBlobUrl;a.download='listen-up-round4-scenario-'+(cIndex+1)+'-'+new Date().toISOString().replace(/[:.]/g,'-')+'.'+ext;
+ document.body.appendChild(a);a.click();a.remove();
+ $('recordingStatus').textContent='Download requested. Check your device’s Downloads folder.';
+});
+$('skipSpeakingBtn').addEventListener('click',()=>{$('conversationNext').disabled=false;$('recordingStatus').textContent='Speaking practice skipped. You can still review the selected response aloud before continuing.';});
+$('conversationNext').addEventListener('click',()=>{if(!cAnswered||$('conversationNext').disabled)return;cIndex++;if(cIndex<conversationQuestions.length)renderConversationQuestion();else{scores.conversation=cScore;showResults();}});
+
+$('restartBtn').addEventListener('click',()=>{
+ stopAllAudio();resetSpeakingPractice();hTrial=0;hScore=0;hAnswered=false;hPlays=0;hSelected='';aIndex=0;aScore=0;pIndex=0;pScore=0;cIndex=0;cScore=0;scores={headphones:0,artifacts:0,pace:0,conversation:0};
+ hSequence.splice(0,hSequence.length,...shuffle(['left','right','right']));setupHeadphoneTrial();renderArtifactQuestion();renderPaceQuestion();renderConversationQuestion();showRound(1);
+});
+if('speechSynthesis'in window){window.speechSynthesis.getVoices();window.speechSynthesis.addEventListener?.('voiceschanged',()=>{});}
+$('playArtifactBtn').disabled=true;$('replayArtifactBtn').disabled=true;
+setupHeadphoneTrial();renderArtifactQuestion();renderPaceQuestion();renderConversationQuestion();prepareArtifactAudio();
+})();
+</script>
+</body>
+</html>
